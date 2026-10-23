@@ -45,7 +45,9 @@ const pl = lang === 'pl';
 </header>
 
 <style>
-  .nav { position: fixed; top: 14px; left: 0; right: 0; z-index: 50; padding-inline: max(12px, var(--margin)); pointer-events: none; view-transition-name: site-nav; }
+  .nav { position: fixed; top: 14px; left: 0; right: 0; z-index: 50; padding-inline: max(12px, var(--margin)); pointer-events: none; }
+  /* A permanent view-transition-name makes the pill a backdrop root and kills its blur */
+  :global(html:active-view-transition) .nav__pill { view-transition-name: site-nav; }
   .nav__pill {
     pointer-events: auto; margin-inline: auto; max-width: 68rem; height: 3.75rem;
     display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 1rem;
