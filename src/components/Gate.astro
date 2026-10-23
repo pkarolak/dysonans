@@ -1,0 +1,96 @@
+---
+import Logo from './Logo.astro';
+import type { Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const copy = {
+  pl: {
+    lead: 'Wpisz hasło, aby wejść.',
+    label: 'Hasło',
+    submit: 'Wejdź',
+    error: 'Nieprawidłowe hasło.',
+  },
+  en: {
+    lead: 'Enter the password to continue.',
+    label: 'Password',
+    submit: 'Continue',
+    error: 'Incorrect password.',
+  },
+}[lang];
+---
+
+<div class="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <form class="gate-form" id="gate-form" method="post" action="">
+    <Logo class="gate-logo" />
+    <p class="lead" id="gate-title">{copy.lead}</p>
+    <label class="sr-only" for="gate-password">{copy.label}</label>
+    <input
+      id="gate-password"
+      type="password"
+      name="password"
+      autocomplete="current-password"
+      placeholder={copy.label}
+      required
+    />
+    <button class="button" type="submit">{copy.submit}</button>
+    <p class="gate-error small" id="gate-error" hidden>{copy.error}</p>
+  </form>
+</div>
+
+<script is:inline>
+  (function () {
+    var form = document.getElementById('gate-form');
+    var input = document.getElementById('gate-password');
+    var error = document.getElementById('gate-error');
+    if (!form || !input || !error) return;
+    if (!document.documentElement.classList.contains('is-unlocked')) input.focus();
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (input.value.trim() !== 'Dysonans2026') {
+        error.hidden = false;
+        input.select();
+        return;
+      }
+      try { sessionStorage.setItem('dysonans-gate', 'ok'); } catch (e) {}
+      document.documentElement.classList.add('is-unlocked');
+      document.dispatchEvent(new Event('dysonans-unlock'));
+    });
+  })();
+</script>
+
+<style>
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    padding: var(--margin);
+    background: var(--bg);
+  }
+  .gate-form {
+    width: min(100%, 22rem);
+    display: grid;
+    justify-items: center;
+    gap: 0.9rem;
+    text-align: center;
+  }
+  .gate-logo { width: min(14rem, 68vw); }
+  .gate-form .lead { margin-inline: auto; }
+  .gate-form input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0 1.15rem;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .gate-form input::placeholder { color: var(--muted); }
+  .gate-form .button { width: 100%; }
+  .gate-error { color: var(--accent-text); }
+</style>

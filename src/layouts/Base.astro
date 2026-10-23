@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import WaveField from '../components/WaveField.astro';
+import Gate from '../components/Gate.astro';
 import { routes, type Lang, type RouteKey } from '../i18n';
 
 interface Props {
@@ -50,10 +51,17 @@ const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
         d.classList.add('js');
         try { m = localStorage.getItem('mode'); } catch (e) {}
         d.dataset.mode = m || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        try { if (sessionStorage.getItem('dysonans-gate') === 'ok') d.classList.add('is-unlocked'); } catch (e) {}
       })();
     </script>
+    <style is:inline>
+      html:not(.is-unlocked) { overflow: hidden; }
+      html:not(.is-unlocked) body > :not(.gate) { display: none !important; }
+      html.is-unlocked .gate { display: none !important; }
+    </style>
   </head>
   <body>
+    <Gate lang={lang} />
     <a class="skip" href="#main">{lang === 'pl' ? 'Przejdź do treści' : 'Skip to content'}</a>
     <Nav lang={lang} current={page} over={navOver} />
     <main id="main" class="main">
@@ -71,29 +79,37 @@ const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
     <script>
       import Lenis from 'lenis';
 
-      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const fine = matchMedia('(pointer: fine)').matches;
-      if (!reduce && fine) {
-        const lenis = new Lenis({ lerp: 0.1, anchors: true });
-        const raf = (t: number) => { lenis.raf(t); requestAnimationFrame(raf); };
-        requestAnimationFrame(raf);
-        (window as any).__lenis = lenis;
-      }
+      const boot = () => {
+        if ((window as any).__dysonansBooted) return;
+        (window as any).__dysonansBooted = true;
 
-      const io = new IntersectionObserver(
-        (entries) => {
-          let n = 0;
-          entries.forEach((e) => {
-            if (!e.isIntersecting) return;
-            const el = e.target as HTMLElement;
-            if (el.hasAttribute('data-reveal') && !el.style.getPropertyValue('--i')) el.style.setProperty('--i', String(Math.min(n++, 5)));
-            el.classList.add('is-in');
-            io.unobserve(el);
-          });
-        },
-        { rootMargin: '0px 0px -6% 0px', threshold: 0 },
-      );
-      document.querySelectorAll('[data-reveal], [data-focus]').forEach((el) => io.observe(el));
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const fine = matchMedia('(pointer: fine)').matches;
+        if (!reduce && fine) {
+          const lenis = new Lenis({ lerp: 0.1, anchors: true });
+          const raf = (t: number) => { lenis.raf(t); requestAnimationFrame(raf); };
+          requestAnimationFrame(raf);
+          (window as any).__lenis = lenis;
+        }
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            let n = 0;
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              const el = e.target as HTMLElement;
+              if (el.hasAttribute('data-reveal') && !el.style.getPropertyValue('--i')) el.style.setProperty('--i', String(Math.min(n++, 5)));
+              el.classList.add('is-in');
+              io.unobserve(el);
+            });
+          },
+          { rootMargin: '0px 0px -6% 0px', threshold: 0 },
+        );
+        document.querySelectorAll('[data-reveal], [data-focus]').forEach((el) => io.observe(el));
+      };
+
+      if (document.documentElement.classList.contains('is-unlocked')) boot();
+      document.addEventListener('dysonans-unlock', () => requestAnimationFrame(boot));
     </script>
   </body>
 </html>
