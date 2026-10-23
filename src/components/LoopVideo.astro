@@ -14,7 +14,7 @@ const { name, label, class: cls = '', eager = false } = Astro.props;
   data-loop-video
   data-eager={eager ? '' : undefined}
 >
-  {name === 'hero-gorizia' && <source src={`/media/${name}.webm`} type="video/webm" />}
+  {(name === 'hero-gorizia' || name === 'hero-reel') && <source src={`/media/${name}.webm`} type="video/webm" />}
   <source src={`/media/${name}.mp4`} type="video/mp4" />
 </video>
 
