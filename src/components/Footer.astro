@@ -60,7 +60,8 @@ const pl = lang === 'pl';
   .footer__h { font-size: var(--step-small); font-weight: 500; color: var(--muted); margin-bottom: 1rem; }
   .footer__list { display: grid; gap: 0.6rem; }
   .footer__list a { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--ink); transition: color var(--t-hover) ease; }
-  .footer__list a :global(svg) { color: var(--muted); }
+  .footer__list a { max-width: 100%; overflow-wrap: anywhere; }
+  .footer__list a :global(svg) { flex: none; color: var(--muted); }
   @media (hover: hover) and (pointer: fine) { .footer__list a:hover { color: var(--accent-text); } }
   .footer__fine { font-size: var(--step-small); color: var(--muted); }
   .footer__repeat { max-width: 36rem; }
