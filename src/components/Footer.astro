@@ -1,0 +1,75 @@
+---
+import { contact } from '../data/site';
+import { nav, routes, t, type Lang } from '../i18n';
+import Logo from './Logo.astro';
+import OnRepeat from './OnRepeat.astro';
+
+interface Props { lang: Lang; onRepeat?: boolean }
+const { lang, onRepeat = false } = Astro.props;
+const pl = lang === 'pl';
+---
+
+<footer class="footer">
+  <div class="footer__inner wrap">
+    <div class="footer__cols">
+      {onRepeat ? (
+        <div class="footer__repeat"><OnRepeat lang={lang} /></div>
+      ) : (
+        <div class="footer__about">
+          <h2 class="footer__h">{pl ? 'Chór Kameralny Dysonans' : 'Dysonans Chamber Choir'}</h2>
+          <p>{pl ? 'Poznań, od 1991 roku. Studenci i absolwenci poznańskich uczelni.' : 'Poznań, since 1991. Students and graduates of Poznań universities.'}</p>
+        </div>
+      )}
+      <nav class="footer__col" aria-label={pl ? 'Strony' : 'Pages'}>
+        <h2 class="footer__h">{pl ? 'Strony' : 'Pages'}</h2>
+        <ul class="footer__list">
+          <li><a class="link" href={routes.home[lang]}>Dysonans</a></li>
+          {nav.map((n) => <li><a class="link" href={routes[n.key][lang]}>{t(n.label, lang)}</a></li>)}
+        </ul>
+      </nav>
+      <div class="footer__col">
+        <h2 class="footer__h">{pl ? 'Słuchaj' : 'Listen'}</h2>
+        <ul class="footer__list">
+          <li><a class="link" href={contact.spotify} target="_blank" rel="noopener">Spotify</a></li>
+          <li><a class="link" href={contact.youtube} target="_blank" rel="noopener">YouTube</a></li>
+          <li><a class="link" href="https://www.music-island.pl/" target="_blank" rel="noopener">Music Island</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h2 class="footer__h">{pl ? 'Kontakt' : 'Contact'}</h2>
+        <ul class="footer__list">
+          <li><a class="link" href={`mailto:${contact.email}`}>{contact.email}</a></li>
+          <li><a class="link nums" href={contact.phoneHref}>{contact.phone}</a></li>
+          <li class="footer__fine">{t(contact.association, lang)}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__mark">
+      <Logo ink="var(--paper-ink)" label="Dysonans" />
+    </div>
+    <p class="footer__legal small">© {new Date().getFullYear()} {pl ? 'Chór Kameralny Dysonans' : 'Dysonans Chamber Choir'}</p>
+  </div>
+</footer>
+
+<style>
+  .footer { background: var(--paper); color: var(--paper-ink); }
+  .footer__inner { padding-top: clamp(3.5rem, 8vw, 6rem); padding-bottom: var(--margin); }
+  .footer__cols {
+    display: grid; grid-template-columns: minmax(0, 5fr) repeat(3, minmax(0, 2fr)); gap: var(--gutter) clamp(1.5rem, 3vw, 3rem);
+  }
+  .footer__h { font-size: var(--step-small); color: #555B5C; margin-bottom: 0.9rem; }
+  .footer__about .footer__h { font-size: var(--step-lead); color: var(--paper-ink); margin-bottom: 0.6rem; }
+  .footer__list { display: grid; gap: 0.45rem; }
+  .footer__fine { font-size: var(--step-small); color: #555B5C; }
+  .footer__repeat { max-width: 34rem; }
+  .footer__mark { margin-top: clamp(3.5rem, 9vw, 7rem); }
+  .footer__legal { margin-top: 1.5rem; color: #555B5C; }
+  @media (max-width: 1100px) {
+    .footer__cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .footer__repeat, .footer__about { grid-column: 1 / -1; margin-bottom: 1.5rem; }
+  }
+  @media (max-width: 560px) {
+    .footer__cols { grid-template-columns: 1fr 1fr; row-gap: 2rem; }
+    .footer__col:last-child { grid-column: 1 / -1; }
+  }
+</style>

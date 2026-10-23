@@ -1,0 +1,96 @@
+---
+import { Image } from 'astro:assets';
+import cover from '../assets/covers/dysonans-2015.jpg';
+import { signatureTrack as track } from '../data/site';
+import { t, type Lang } from '../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const url = `https://open.spotify.com/track/${track.spotifyTrack}`;
+---
+
+<section class="onrepeat" aria-labelledby="onrepeat-title" data-onrepeat data-track={track.spotifyTrack}>
+  <div class="onrepeat__cover">
+    <Image src={cover} alt={lang === 'pl' ? 'Okładka albumu Dysonans 2015' : 'Dysonans 2015 album cover'} width={240} height={240} class="cover" />
+  </div>
+  <div class="onrepeat__body">
+    <h2 id="onrepeat-title" class="onrepeat__label">{lang === 'pl' ? 'Na okrągło' : 'On repeat'}</h2>
+    <p class="onrepeat__title">{track.title}</p>
+    <p class="onrepeat__meta">{track.composer} · {track.album} · <span class="nums">{track.duration}</span></p>
+    <p class="onrepeat__why">{t(track.why, lang)}</p>
+    <div class="onrepeat__actions">
+      <a class="button" href={url} data-onrepeat-play>
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 1.5v13L14 8z" fill="currentColor" /></svg>
+        <span data-onrepeat-label>{lang === 'pl' ? 'Odtwórz' : 'Play'}</span>
+      </a>
+      <a class="link onrepeat__out" href={url} target="_blank" rel="noopener">{lang === 'pl' ? 'Otwórz w Spotify' : 'Open in Spotify'}</a>
+    </div>
+  </div>
+  <div class="onrepeat__player" data-onrepeat-slot hidden><div data-onrepeat-embed></div></div>
+</section>
+
+<style>
+  .onrepeat {
+    display: grid; grid-template-columns: 7.5rem 1fr; gap: 1.25rem; align-items: start;
+    padding: 1.25rem; background: var(--paper-ink); color: var(--ink);
+  }
+  .onrepeat__cover { aspect-ratio: 1; overflow: clip; }
+  .onrepeat__label { font-size: var(--step-small); color: var(--muted); }
+  .onrepeat__title { font-size: var(--step-lead); line-height: 1.15; margin-top: 0.25rem; }
+  .onrepeat__meta { font-size: var(--step-small); color: var(--muted); margin-top: 0.2rem; }
+  .onrepeat__why { font-size: var(--step-small); margin-top: 0.75rem; max-width: 40ch; }
+  .onrepeat__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; margin-top: 1rem; }
+  .onrepeat__actions .button { min-height: 2.75rem; padding-inline: 1.1rem; }
+  .onrepeat__out { font-size: var(--step-small); }
+  .onrepeat__player { grid-column: 1 / -1; }
+  .onrepeat__player iframe { display: block; width: 100%; height: 80px; border: 0; }
+  @media (max-width: 420px) { .onrepeat { grid-template-columns: 5.5rem 1fr; } }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-onrepeat]');
+  const play = root?.querySelector<HTMLAnchorElement>('[data-onrepeat-play]');
+  const slot = root?.querySelector<HTMLElement>('[data-onrepeat-slot]');
+  const embed = root?.querySelector<HTMLElement>('[data-onrepeat-embed]');
+  const label = root?.querySelector<HTMLElement>('[data-onrepeat-label]');
+
+  type Controller = { togglePlay(): void; play(): void; addListener(ev: string, cb: (e: any) => void): void };
+  let controller: Controller | null = null;
+  let loading = false;
+
+  const logos = () => document.querySelectorAll<SVGElement>('[data-logo]');
+  const setPlaying = (playing: boolean, progress: number) => {
+    logos().forEach((l) => {
+      l.classList.toggle('is-playing', playing);
+      l.style.setProperty('--progress', String(progress));
+    });
+    dispatchEvent(new CustomEvent('dysonans:tension', { detail: playing ? 1 - progress : 1 }));
+  };
+
+  if (root && play && slot && embed && label) {
+    const words = document.documentElement.lang === 'pl' ? ['Odtwórz', 'Pauza'] : ['Play', 'Pause'];
+    play.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (controller) { controller.togglePlay(); return; }
+      if (loading) return;
+      loading = true;
+      slot.hidden = false;
+      (window as any).onSpotifyIframeApiReady = (api: any) => {
+        api.createController(embed, { uri: `spotify:track:${root.dataset.track}`, width: '100%', height: 80 }, (c: Controller) => {
+          controller = c;
+          c.addListener('ready', () => c.play());
+          c.addListener('playback_update', (ev: any) => {
+            const { isPaused, position, duration } = ev.data;
+            label.textContent = isPaused ? words[0] : words[1];
+            setPlaying(!isPaused, duration ? position / duration : 0);
+          });
+        });
+      };
+      const s = document.createElement('script');
+      s.src = 'https://open.spotify.com/embed/iframe-api/v1';
+      s.async = true;
+      s.onerror = () => { window.open(play.href, '_blank', 'noopener'); };
+      document.head.append(s);
+    });
+  }
+</script>

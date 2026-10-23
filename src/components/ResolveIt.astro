@@ -1,0 +1,258 @@
+---
+import LoopVideo from './LoopVideo.astro';
+import { signatureTrack } from '../data/site';
+import type { Lang } from '../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const pl = lang === 'pl';
+const voices = pl ? ['Sopran', 'Alt', 'Tenor', 'Bas'] : ['Soprano', 'Alto', 'Tenor', 'Bass'];
+---
+
+<section class="resolve" aria-labelledby="resolve-title" data-resolve>
+  <div class="resolve__media">
+    <LoopVideo name="scores-loop" label={pl ? 'Chórzyści z nutami podczas koncertu' : 'Singers holding their scores in concert'} />
+  </div>
+  <div class="resolve__panel glass wrap">
+    <div class="resolve__text">
+      <h2 id="resolve-title" class="section-title" data-focus>{pl ? 'Nastrój chór' : 'Tune the choir'}</h2>
+      <p class="resolve__lead" data-focus style="--i:1">
+        {pl
+          ? 'Przytrzymaj kamerton. Cztery głosy zaczną obok siebie i zejdą się w akord A-dur, przy a¹ = 440 Hz. Tak działa dysonans: napięcie, które chce się rozwiązać.'
+          : 'Hold the tuning fork. Four voices start out of tune and meet in an A major chord at A = 440 Hz. That is what a dissonance does: it is tension that wants to resolve.'}
+      </p>
+    </div>
+    <div class="resolve__control">
+      <svg class="resolve__lines" viewBox="0 0 600 160" preserveAspectRatio="none" aria-hidden="true" data-resolve-lines>
+        {voices.map((_, i) => <path class={`resolve__line resolve__line--${i}`} d="M0 80H600" />)}
+      </svg>
+      <ul class="resolve__voices nums" aria-live="off">
+        {voices.map((v, i) => (
+          <li><span>{v}</span><span data-resolve-cents={i}>{['+138', '+47', '−39', '+56'][i]}&#8202;c</span></li>
+        ))}
+      </ul>
+      <button class="resolve__hold button" type="button" data-resolve-hold aria-describedby="resolve-state">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 2v7a5 5 0 0 0 10 0V2M12 14v8" fill="none" stroke="currentColor" stroke-width="2.2" /></svg>
+        <span data-resolve-label>{pl ? 'Przytrzymaj kamerton' : 'Hold the fork'}</span>
+      </button>
+      <p class="resolve__state small" id="resolve-state" role="status" data-resolve-state>
+        {pl ? 'Włącz dźwięk. Trzymaj przycisk albo spację, aż głosy się zejdą.' : 'Turn your sound on. Hold the button or the space bar until the voices meet.'}
+      </p>
+      <a class="resolve__fallback link" href={`https://open.spotify.com/track/${signatureTrack.spotifyTrack}`} target="_blank" rel="noopener">
+        {pl ? `Posłuchaj „${signatureTrack.title}” na Spotify` : `Listen to “${signatureTrack.title}” on Spotify`}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .resolve { position: relative; min-height: 100svh; display: grid; align-items: end; overflow: clip; }
+  .resolve__media { position: absolute; inset: 0; }
+  .resolve__media :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.55) contrast(1.05); }
+  .resolve__panel {
+    position: relative; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(2rem, 6vw, 6rem);
+    align-items: end; padding-block: clamp(2.5rem, 6vw, 4.5rem); margin: var(--margin);
+  }
+  .resolve__lead { margin-top: 1.25rem; max-width: 46ch; }
+  .resolve__control { display: grid; gap: 1.1rem; }
+  .resolve__lines { width: 100%; height: clamp(90px, 10vw, 140px); overflow: visible; }
+  .resolve__line { fill: none; stroke: var(--ink); stroke-width: 1.6; vector-effect: non-scaling-stroke; opacity: 0.75; transition: stroke 400ms ease, opacity 400ms ease; }
+  .resolve__line--1 { opacity: 0.6; }
+  .resolve__line--2 { opacity: 0.5; }
+  .resolve__line--3 { opacity: 0.42; }
+  .resolve.is-resolved .resolve__line { stroke: var(--accent-strong); opacity: 1; }
+  .resolve__voices { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gutter); font-size: var(--step-small); color: var(--muted); }
+  .resolve__voices li { display: grid; gap: 0.1rem; }
+  .resolve__voices li span:last-child { color: var(--ink); font-size: var(--step-body); }
+  .resolve__hold { justify-self: start; min-height: 3.5rem; padding-inline: 1.6rem; touch-action: none; user-select: none; -webkit-user-select: none; position: relative; overflow: clip; }
+  .resolve__hold::before {
+    content: ''; position: absolute; inset: 0; background: var(--accent-strong); transform: scaleX(var(--p, 0)); transform-origin: 0 50%;
+  }
+  .resolve__hold > * { position: relative; }
+  .resolve__hold.is-holding { transform: scale(0.97); }
+  .resolve__state { color: var(--muted); min-height: 2.9em; }
+  html.js .resolve__fallback { display: none; }
+  html:not(.js) .resolve__hold, html:not(.js) .resolve__state { display: none; }
+
+  @media (max-width: 860px) {
+    .resolve__panel { grid-template-columns: 1fr; margin: 10px; }
+  }
+</style>
+
+<script>
+  type Voice = { start: number; target: number; pan: number; nodes?: { o1: OscillatorNode; o2: OscillatorNode } };
+  const root = document.querySelector<HTMLElement>('[data-resolve]');
+  const btn = root?.querySelector<HTMLButtonElement>('[data-resolve-hold]');
+  const lines = root ? [...root.querySelectorAll<SVGPathElement>('[data-resolve-lines] path')] : [];
+  const cents = root ? [...root.querySelectorAll<HTMLElement>('[data-resolve-cents]')] : [];
+  const state = root?.querySelector<HTMLElement>('[data-resolve-state]');
+  const label = root?.querySelector<HTMLElement>('[data-resolve-label]');
+  const pl = document.documentElement.lang === 'pl';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Sus4 cluster, slightly out of tune, resolving to A major: A4 (fork), C#4, A3, E3, A2.
+  const voices: Voice[] = [
+    { start: 293.66 * 1.022, target: 277.18, pan: -0.35 },
+    { start: 233.08 * 0.97, target: 220.0, pan: 0.3 },
+    { start: 155.56 * 1.036, target: 164.81, pan: -0.15 },
+    { start: 116.54 * 0.975, target: 110.0, pan: 0.2 },
+  ];
+  const startCents = voices.map((v) => 1200 * Math.log2(v.start / v.target));
+
+  let ctx: AudioContext | null = null;
+  let master: GainNode | null = null;
+  let p = 0;
+  let holding = false;
+  let resolved = false;
+  let raf = 0;
+  let last = 0;
+  let t = 0;
+
+  const vowel = (c: AudioContext, input: AudioNode, out: AudioNode) => {
+    for (const [f, q, g] of [[730, 7, 1], [1090, 9, 0.45], [2440, 12, 0.18]] as const) {
+      const bp = c.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q;
+      const gain = c.createGain(); gain.gain.value = g;
+      input.connect(bp).connect(gain).connect(out);
+    }
+  };
+
+  const ensureAudio = () => {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+    const AC = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AC) return;
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = 0;
+    const comp = ctx.createDynamicsCompressor();
+    master.connect(comp).connect(ctx.destination);
+    for (const v of voices) {
+      const mix = ctx.createGain(); mix.gain.value = 0.5;
+      const o1 = ctx.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = v.start;
+      const o2 = ctx.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = v.start; o2.detune.value = 9;
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 4.6 + Math.random() * 1.2;
+      const depth = ctx.createGain(); depth.gain.value = 6;
+      lfo.connect(depth); depth.connect(o1.detune); depth.connect(o2.detune);
+      o1.connect(mix); o2.connect(mix);
+      const voiceOut = ctx.createGain(); voiceOut.gain.value = 0.22;
+      vowel(ctx, mix, voiceOut);
+      const pan = ctx.createStereoPanner(); pan.pan.value = v.pan;
+      voiceOut.connect(pan).connect(master);
+      o1.start(); o2.start(); lfo.start();
+      v.nodes = { o1, o2 };
+    }
+  };
+
+  const strike = () => {
+    if (!ctx || !master) return;
+    const now = ctx.currentTime;
+    for (const [f, g] of [[440, 0.16], [880 * 1.003, 0.025]] as const) {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const env = ctx.createGain();
+      env.gain.setValueAtTime(0, now);
+      env.gain.linearRampToValueAtTime(g, now + 0.01);
+      env.gain.exponentialRampToValueAtTime(0.0001, now + 6);
+      o.connect(env).connect(ctx.destination);
+      o.start(now); o.stop(now + 6.2);
+    }
+  };
+
+  const ease = (x: number) => 1 - Math.pow(1 - x, 3);
+
+  const draw = () => {
+    const tension = 1 - ease(p);
+    lines.forEach((path, i) => {
+      const detune = [0.38, -0.52, 0.61, -0.44][i] * tension;
+      const freq = 3 * (1 + detune * 0.35);
+      const phase = t * (1.2 + detune) + i * 1.3 * tension;
+      const amp = 46 * (1 - 0.35 * tension * (0.5 + 0.5 * Math.sin(t * 0.9 + i)));
+      let d = '';
+      for (let x = 0; x <= 600; x += 6) {
+        const y = 80 + amp * Math.sin((x / 600) * Math.PI * 2 * freq + phase) + tension * (i - 1.5) * 9;
+        d += (x ? 'L' : 'M') + x + ' ' + y.toFixed(1);
+      }
+      path.setAttribute('d', d);
+    });
+    cents.forEach((el, i) => {
+      const c = Math.round(startCents[i] * tension);
+      el.innerHTML = (c > 0 ? '+' : c < 0 ? '−' : '±') + Math.abs(c) + '&#8202;c';
+    });
+  };
+
+  const apply = () => {
+    if (!ctx || !master) return;
+    const now = ctx.currentTime;
+    const e = ease(p);
+    voices.forEach((v) => {
+      const f = v.start * Math.pow(v.target / v.start, e);
+      v.nodes!.o1.frequency.setTargetAtTime(f, now, 0.05);
+      v.nodes!.o2.frequency.setTargetAtTime(f, now, 0.05);
+    });
+    const level = holding || resolved ? 0.9 : Math.min(0.9, p * 1.8);
+    master.gain.setTargetAtTime(level, now, holding ? 0.08 : 0.35);
+  };
+
+  const finish = () => {
+    resolved = true;
+    holding = false;
+    btn?.classList.remove('is-holding');
+    root?.classList.add('is-resolved');
+    if (state) state.textContent = pl ? 'Rozwiązane. Akord A-dur, a¹ = 440 Hz.' : 'Resolved. A major, A = 440 Hz.';
+    if (label) label.textContent = pl ? 'Jeszcze raz' : 'Once more';
+    if (ctx && master) master.gain.setTargetAtTime(0, ctx.currentTime + 2.2, 0.6);
+    dispatchEvent(new CustomEvent('dysonans:tension', { detail: 0 }));
+    setTimeout(() => { dispatchEvent(new CustomEvent('dysonans:tension', { detail: 1 })); }, 6000);
+  };
+
+  const loop = (now: number) => {
+    const dt = Math.min(0.05, (now - last) / 1000 || 0);
+    last = now;
+    if (!reduce) t += dt * 2.2;
+    if (holding) p = Math.min(1, p + dt / 2.6);
+    else if (!resolved) p = Math.max(0, p - dt / 1.4);
+    btn?.style.setProperty('--p', String(resolved ? 1 : p));
+    apply();
+    draw();
+    if (!resolved) dispatchEvent(new CustomEvent('dysonans:tension', { detail: 1 - ease(p) }));
+    if (holding && p >= 1) finish();
+    const idle = !holding && (resolved || p === 0) && reduce;
+    raf = idle ? 0 : requestAnimationFrame(loop);
+  };
+  const run = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); } };
+
+  const press = () => {
+    if (resolved) {
+      resolved = false; p = 0;
+      root?.classList.remove('is-resolved');
+      if (label) label.textContent = pl ? 'Przytrzymaj kamerton' : 'Hold the fork';
+    }
+    ensureAudio();
+    strike();
+    holding = true;
+    btn?.classList.add('is-holding');
+    if (state) state.textContent = pl ? 'Trzymaj… głosy szukają tonu.' : 'Keep holding… the voices are finding the pitch.';
+    run();
+  };
+  const release = () => {
+    if (!holding) return;
+    holding = false;
+    btn?.classList.remove('is-holding');
+    if (!resolved && state) state.textContent = pl ? 'Za wcześnie: głosy rozjeżdżają się z powrotem. Spróbuj dłużej.' : 'Too soon: the voices drift apart again. Hold a little longer.';
+    run();
+  };
+
+  if (root && btn) {
+    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); btn.setPointerCapture(e.pointerId); press(); });
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointercancel', release);
+    btn.addEventListener('lostpointercapture', release);
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+    btn.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); press(); } });
+    btn.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') release(); });
+    draw();
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) run();
+      else if (raf && !holding) { cancelAnimationFrame(raf); raf = 0; }
+    });
+    io.observe(root);
+  }
+</script>

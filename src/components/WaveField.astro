@@ -1,0 +1,132 @@
+---
+// Two voices drawn as interference fields. Their beating is the visual form of dissonance.
+// Listens for `dysonans:tension` (0 resolved, 1 tense) from the tuning control and the player.
+---
+
+<div class="wavefield-layer" aria-hidden="true">
+  <canvas class="wavefield" data-wavefield></canvas>
+</div>
+
+<style>
+  .wavefield-layer {
+    position: sticky; top: 0; height: 100lvh; margin-bottom: -100lvh; z-index: -1; pointer-events: none;
+  }
+  .wavefield {
+    width: 100%; height: 100%; opacity: 0; transition: opacity 1200ms ease;
+  }
+  .wavefield.is-on { opacity: 1; }
+</style>
+
+<script>
+  import { Renderer, Program, Mesh, Triangle } from 'ogl';
+
+  const vertex = /* glsl */ `
+    attribute vec2 position;
+    void main() { gl_Position = vec4(position, 0.0, 1.0); }
+  `;
+  const fragment = /* glsl */ `
+    precision highp float;
+    uniform vec2 uRes;
+    uniform float uTime;
+    uniform float uTension;
+    uniform float uScroll;
+    uniform float uRiver;
+    uniform vec3 uGround;
+    uniform vec3 uInk;
+    uniform vec3 uRed;
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / uRes;
+      vec2 p = (uv - 0.5) * vec2(uRes.x / uRes.y, 1.0);
+      float t = uTime * 0.18;
+      vec2 a = mix(vec2(-1.35, -0.55 + 0.08 * sin(t * 0.7)), vec2(-6.0 - t * 0.4, -4.2), uRiver);
+      vec2 b = mix(vec2(1.45, 0.65 + 0.06 * cos(t * 0.5) - uScroll * 0.25), vec2(5.5 - t * 0.4, 4.6 - uScroll * 0.4), uRiver);
+      float f = 4.5;
+      float detune = 1.0 + 0.11 * uTension;
+      float w1 = sin(length(p - a) * f * 3.14159 - t * 2.0);
+      float w2 = sin(length(p - b) * f * detune * 3.14159 - t * 2.0 * detune);
+      float w = (w1 + w2) * 0.5;
+      float line = pow(0.5 + 0.5 * cos(w * 5.0), 70.0);
+      float beat = 0.5 + 0.5 * w1 * w2;
+      float vignette = smoothstep(1.3, 0.1, length(p * vec2(0.75, 1.15)));
+      float k = line * (0.018 + 0.03 * beat) * vignette;
+      vec3 col = uGround + (uInk - uGround) * k + uRed * k * 0.35 * uTension;
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  const hex = (h: string) => {
+    const n = parseInt(h.replace('#', ''), 16);
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  };
+
+  function start(canvas: HTMLCanvasElement) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saveData = (navigator as any).connection?.saveData;
+    if (saveData) return;
+    let renderer: Renderer;
+    try {
+      renderer = new Renderer({ canvas, dpr: Math.min(window.devicePixelRatio, 1) * 0.6, alpha: false, antialias: false });
+    } catch {
+      return;
+    }
+    const gl = renderer.gl;
+    const css = getComputedStyle(document.documentElement);
+    const ground = hex(css.getPropertyValue('--bg').trim() || '#171A1B');
+    const river = document.documentElement.dataset.theme === 'river';
+    const program = new Program(gl, {
+      vertex,
+      fragment,
+      uniforms: {
+        uRes: { value: [1, 1] },
+        uTime: { value: 0 },
+        uTension: { value: 1 },
+        uScroll: { value: 0 },
+        uRiver: { value: river ? 1 : 0 },
+        uGround: { value: ground },
+        uInk: { value: hex(river ? '#9FD3DC' : '#F1F2F1') },
+        uRed: { value: hex(river ? '#2F7F8F' : '#D8252B') },
+      },
+    });
+    const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+
+    const resize = () => {
+      renderer.setSize(innerWidth, innerHeight);
+      program.uniforms.uRes.value = [gl.drawingBufferWidth, gl.drawingBufferHeight];
+    };
+    resize();
+    addEventListener('resize', resize);
+
+    let target = 1;
+    let tension = 1;
+    addEventListener('dysonans:tension', (e: Event) => {
+      target = Math.max(0, Math.min(1, (e as CustomEvent).detail));
+    });
+
+    let running = true;
+    document.addEventListener('visibilitychange', () => {
+      running = !document.hidden;
+      if (running) requestAnimationFrame(loop);
+    });
+
+    let last = performance.now();
+    let time = 0;
+    function loop(now: number) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (!reduce) time += dt;
+      tension += (target - tension) * Math.min(1, dt * 2.2);
+      program.uniforms.uTime.value = time;
+      program.uniforms.uTension.value = tension;
+      program.uniforms.uScroll.value = scrollY / Math.max(1, document.body.scrollHeight - innerHeight);
+      renderer.render({ scene: mesh });
+      if (!reduce || Math.abs(target - tension) > 0.001) requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    canvas.classList.add('is-on');
+  }
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-wavefield]');
+  if (canvas) start(canvas);
+</script>

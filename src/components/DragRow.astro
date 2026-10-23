@@ -1,0 +1,41 @@
+---
+interface Props { label: string; class?: string }
+const { label, class: cls = '' } = Astro.props;
+---
+
+<div class:list={['drag', cls]} role="region" aria-label={label} tabindex="0" data-drag>
+  <div class="drag__row"><slot /></div>
+</div>
+
+<style>
+  .drag { overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-padding-inline: var(--margin); }
+  .drag::-webkit-scrollbar { display: none; }
+  .drag.is-dragging { scroll-snap-type: none; cursor: grabbing; }
+  .drag.is-dragging * { pointer-events: none; }
+  .drag__row { display: flex; gap: var(--gutter); width: max-content; padding-inline: var(--margin); }
+  .drag__row > :global(*) { scroll-snap-align: start; flex: none; width: var(--item-w, min(42rem, calc(100vw - 2 * var(--margin) - 2.5rem))); }
+</style>
+
+<script>
+  if (matchMedia('(pointer: fine)').matches) {
+    document.querySelectorAll<HTMLElement>('[data-drag]').forEach((row) => {
+      let x0 = 0, s0 = 0, down = false, moved = false;
+      row.addEventListener('pointerdown', (e) => {
+        if (e.pointerType !== 'mouse' || (e.target as HTMLElement).closest('iframe')) return;
+        down = true; moved = false; x0 = e.clientX; s0 = row.scrollLeft;
+      });
+      addEventListener('pointermove', (e) => {
+        if (!down) return;
+        const dx = e.clientX - x0;
+        if (Math.abs(dx) > 5) { moved = true; row.classList.add('is-dragging'); }
+        if (moved) row.scrollLeft = s0 - dx;
+      });
+      addEventListener('pointerup', () => {
+        if (!down) return;
+        down = false;
+        if (moved) requestAnimationFrame(() => row.classList.remove('is-dragging'));
+      });
+      row.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    });
+  }
+</script>

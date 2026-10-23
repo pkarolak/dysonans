@@ -1,0 +1,80 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import WaveField from '../components/WaveField.astro';
+import { routes, type Lang, type RouteKey } from '../i18n';
+
+interface Props {
+  lang: Lang;
+  page: RouteKey;
+  title: string;
+  description: string;
+  navOver?: boolean;
+  onRepeat?: boolean;
+  theme?: 'default' | 'river';
+}
+const { lang, page, title, description, navOver = false, onRepeat = false, theme = 'default' } = Astro.props;
+const site = Astro.site ?? new URL('https://dysonans.pl');
+const canonical = new URL(routes[page][lang], site).href;
+const alt = (l: Lang) => new URL(routes[page][l], site).href;
+const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
+---
+
+<!doctype html>
+<html lang={lang} data-theme={theme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="pl" href={alt('pl')} />
+    <link rel="alternate" hreflang="en" href={alt('en')} />
+    <link rel="alternate" hreflang="x-default" href={alt('pl')} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#171A1B" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/og.jpg', site).href} />
+    <meta property="og:locale" content={lang === 'pl' ? 'pl_PL' : 'en_GB'} />
+    <link rel="preload" href="/fonts/boska-400.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <a class="skip" href="#main">{lang === 'pl' ? 'Przejdź do treści' : 'Skip to content'}</a>
+    <Nav lang={lang} current={page} over={navOver} />
+    <main id="main" class="main">
+      <WaveField />
+      <slot />
+    </main>
+    <Footer lang={lang} onRepeat={onRepeat} />
+
+    <style>
+      .main { position: relative; z-index: 1; background: var(--bg); isolation: isolate; overflow: clip; }
+      .skip { position: fixed; top: 0.75rem; left: 0.75rem; z-index: 100; padding: 0.75rem 1rem; background: var(--ink); color: var(--paper-ink); transform: translateY(-200%); }
+      .skip:focus { transform: none; }
+    </style>
+
+    <script>
+      import Lenis from 'lenis';
+
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const fine = matchMedia('(pointer: fine)').matches;
+      if (!reduce && fine) {
+        const lenis = new Lenis({ lerp: 0.1, anchors: true });
+        const raf = (t: number) => { lenis.raf(t); requestAnimationFrame(raf); };
+        requestAnimationFrame(raf);
+        (window as any).__lenis = lenis;
+      }
+
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }),
+        { rootMargin: '0px 0px 8% 0px', threshold: 0 },
+      );
+      document.querySelectorAll('[data-reveal], [data-focus]').forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

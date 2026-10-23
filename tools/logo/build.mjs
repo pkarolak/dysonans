@@ -157,6 +157,16 @@ out("logo-inverse.svg", svg({ mode: "outline", view: VIEW_TIGHT, ink: ground, re
 out("logo-mono-white.svg", svg({ mode: "outline", view: VIEW_TIGHT, ink: "#FFFFFF", red: "#FFFFFF" }));
 out("logo-mono-black.svg", svg({ mode: "outline", view: VIEW_TIGHT, ink: "#000000", red: "#000000" }));
 
+writeFileSync(
+  join(BRAND, "logo-paths.json"),
+  JSON.stringify({
+    viewBox: VIEW_TIGHT,
+    strokeWidth: SW,
+    glyphs: GLYPHS.map((g) => ({ id: g.id, color: g.color, d: g.paths.map(strokeD).join("") })),
+    bar: BAR,
+  }, null, 1) + "\n",
+);
+
 // The fork alone, as an icon on the ground.
 const fork = GLYPHS.find((g) => g.id === "y");
 const forkD = fork.paths.map(outlineD).join("");

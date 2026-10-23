@@ -1,0 +1,176 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { contact, festival } from '../data/site';
+import { t, type Lang } from '../i18n';
+import warta from '../assets/festival/warta.jpg';
+import castle from '../assets/festival/castle-museum.jpg';
+import map from '../assets/festival/map-1770.jpg';
+import credits from '../assets/festival/credits.json';
+import churchConcert from '../assets/photos/church-concert.jpg';
+import LoopVideo from '../components/LoopVideo.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const pl = lang === 'pl';
+const L = (p: string, e: string) => (pl ? p : e);
+
+const notify = `mailto:${contact.email}?subject=${encodeURIComponent(L('Muzyka Warta Słuchania 2027: dajcie znać', 'Muzyka Warta Słuchania 2027: let me know'))}&body=${encodeURIComponent(L('Dzień dobry,\n\nproszę o wiadomość, gdy ogłosicie program IV edycji festiwalu.\n', 'Hello,\n\nPlease let me know when you announce the programme of the 4th festival.\n'))}`;
+
+const used = ['warta-sierakow', 'sierakow-zamek-opalinskich', 'opalinski-castle-in-sierakow-map'];
+const creditLine = credits
+  .filter((c: { file: string }) => used.some((u) => c.file.includes(u)))
+  .map((c: { credit: string; page: string }) => ({ text: c.credit, href: c.page }));
+
+const facts = [
+  { k: L('Gdzie', 'Where'), v: t(festival.venue, lang) },
+  { k: L('Kiedy', 'When'), v: L('Pierwszy weekend września, od 2024 roku', 'The first weekend of September, since 2024') },
+  { k: L('Organizatorzy', 'Organisers'), v: t(festival.organisers, lang) },
+  { k: L('Dyrekcja artystyczna', 'Artistic director'), v: festival.director },
+  { k: L('Wsparcie', 'Support'), v: t(festival.funding, lang) },
+];
+---
+
+<Base
+  lang={lang}
+  page="festival"
+  theme="river"
+  title="Muzyka Warta Słuchania"
+  description={L('Festiwal Muzyka Warta Słuchania w Sierakowie nad Wartą: koncerty, warsztaty i wykłady we wrześniu, od 2024 roku.', 'The Muzyka Warta Słuchania festival in Sieraków on the Warta: concerts, workshops and talks every September since 2024.')}
+>
+  <header class="page-head wrap fest-head">
+    <h1 data-focus>Muzyka Warta Słuchania</h1>
+    <p class="lead" data-focus style="--i:1">
+      {L('Festiwal w Sierakowie nad Wartą. Rzeka daje mu nazwę, a my dbamy, żeby muzyka była warta słuchania: trzy edycje, trzy różne światy.', 'A festival in Sieraków on the river Warta. The name is a pun: “warta słuchania” means “worth hearing”. Three editions so far, each a different world.')}
+    </p>
+  </header>
+
+  <figure class="river">
+    <Image src={warta} alt={L('Warta w Sierakowie, zielone brzegi i spokojna woda', 'The Warta at Sieraków, green banks and still water')} widths={[900, 1400, 2000]} sizes="100vw" quality={62} loading="eager" class="cover river__img" />
+    <figcaption class="river__cap glass small">{L('Warta w Sierakowie', 'The Warta at Sieraków')}</figcaption>
+  </figure>
+
+  <section class="facts wrap" aria-labelledby="facts-title">
+    <div class="facts__grid">
+      <div>
+        <h2 id="facts-title" class="section-title" data-focus>{L('Nad rzeką, we wrześniu', 'By the river, in September')}</h2>
+        <dl class="facts__list">
+          {facts.map((f, i) => (
+            <div class="facts__row" data-reveal style={`--i:${i}`}>
+              <dt class="muted">{f.k}</dt>
+              <dd>{f.v}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <figure class="facts__map shutter" data-reveal>
+        <Image src={map} alt={L('Sieraków i zamek Opalińskich na mapie z 1770 roku', 'Sieraków and the Opaliński castle on a map from 1770')} widths={[600, 1000, 1600]} sizes="(max-width: 860px) 100vw, 45vw" class="cover facts__map-img" />
+        <figcaption class="small muted">{L('Sieraków na mapie z 1770 roku', 'Sieraków on a map from 1770')}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  {festival.editions.map((ed, i) => (
+    <section class="edition wrap" aria-labelledby={`ed-${ed.year}`}>
+      <div class="edition__side">
+        <p class="edition__year nums" data-focus aria-hidden="true">{ed.year}</p>
+        <h2 id={`ed-${ed.year}`} class="edition__title" data-focus style="--i:1">{ed.n} {L('edycja', 'edition')}: {t(ed.theme, lang)}</h2>
+        <p class="muted" data-focus style="--i:2">{t(ed.dates, lang)}</p>
+      </div>
+      <div class="edition__main">
+        <p class="edition__summary" data-focus>{t(ed.summary, lang)}</p>
+        {ed.year === 2026 && (
+          <figure class="edition__pic edition__film" data-reveal>
+            <LoopVideo name="scores-loop" label={L('Chórzyści Dysonansu śpiewają z nut', 'Dysonans singers reading from their scores')} />
+            <figcaption class="small muted">{L('Dysonans na koncercie', 'Dysonans in concert')}</figcaption>
+          </figure>
+        )}
+        {ed.year === 2024 && (
+          <figure class="edition__pic shutter" data-reveal>
+            <Image src={churchConcert} alt={L('Chór Dysonans w prezbiterium kościoła', 'Dysonans in a church chancel')} widths={[700, 1200]} sizes="(max-width: 860px) 100vw, 55vw" class="cover lit" />
+            <figcaption class="small muted">{L('Dysonans, Tu es Petrus Palestriny', 'Dysonans singing Palestrina’s Tu es Petrus')}</figcaption>
+          </figure>
+        )}
+        {ed.year === 2025 && (
+          <figure class="edition__pic shutter" data-reveal>
+            <Image src={castle} alt={L('Zamek Opalińskich w Sierakowie, dziś muzeum', 'The Opaliński castle in Sieraków, now a museum')} widths={[700, 1200]} sizes="(max-width: 860px) 100vw, 55vw" class="cover lit" />
+            <figcaption class="small muted">{L('Zamek Opalińskich, gdzie stanęła wystawa o baroku misyjnym', 'The Opaliński castle, home of the mission baroque exhibition')}</figcaption>
+          </figure>
+        )}
+        <ul class="events">
+          {ed.events.map((e, j) => (
+            <li class:list={['event', { 'event--us': e.dysonans }]} data-reveal style={`--i:${j}`}>
+              <span class="event__when nums">{t(e.day, lang)}{e.time && `, ${e.time}`}</span>
+              <span class="event__what">
+                <span class="event__title">{t(e.title, lang)}</span>
+                {e.who && <span class="event__who muted">{e.who}</span>}
+              </span>
+              <span class="event__where muted">{t(e.where, lang)}</span>
+            </li>
+          ))}
+        </ul>
+        {ed.programme && (
+          <div class="programme" data-reveal>
+            <h3 class="programme__h">{L('Program koncertu Dysonansu', 'Dysonans concert programme')}</h3>
+            <p>{t(ed.programme, lang)}</p>
+          </div>
+        )}
+      </div>
+    </section>
+  ))}
+
+  <section class="next wrap" aria-labelledby="next-title">
+    <div class="next__panel">
+      <h2 id="next-title" class="section-title" data-focus>{L('IV edycja, wrzesień 2027', '4th edition, September 2027')}</h2>
+      <p data-focus style="--i:1">{L('Programu jeszcze nie ogłosiliśmy. Zostaw adres, a napiszemy, gdy będzie gotowy.', 'We have not announced the programme yet. Leave your address and we will write when it is ready.')}</p>
+      <a class="button" href={notify} data-focus style="--i:2">{L('Dajcie mi znać', 'Let me know')}</a>
+    </div>
+  </section>
+
+  <aside class="credits wrap small muted" aria-label={L('Źródła zdjęć', 'Picture credits')}>
+    <p>{L('Zdjęcia Sierakowa: ', 'Pictures of Sieraków: ')}{creditLine.map((c: { text: string; href: string }, i: number) => (<>{i > 0 && '; '}<a class="link" href={c.href} target="_blank" rel="noopener">{c.text}</a></>))}.</p>
+  </aside>
+</Base>
+
+<style>
+  .fest-head h1 { max-width: 11ch; }
+  .river { position: relative; height: 82svh; overflow: clip; }
+  .river__img { filter: brightness(0.72) contrast(1.05) saturate(0.85); }
+  .river__cap { position: absolute; left: var(--margin); bottom: var(--margin); padding: 0.6rem 1rem; color: var(--ink); }
+
+  .facts { padding-block: var(--section); }
+  .facts__grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(2rem, 6vw, 6rem); align-items: center; }
+  .facts__list { margin-top: 3rem; display: grid; gap: 1.25rem; }
+  .facts__row { display: grid; grid-template-columns: 11rem 1fr; gap: var(--gutter); }
+  .facts__map { display: grid; gap: 0.75rem; }
+  .facts__map-img { aspect-ratio: 1670 / 908; height: auto; filter: invert(0.88) sepia(0.15) hue-rotate(150deg) brightness(0.95); }
+
+  .edition { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--gutter); padding-block: calc(var(--section) / 2); }
+  .edition__side { position: sticky; top: 6rem; align-self: start; display: grid; gap: 0.75rem; }
+  .edition__year { font-size: var(--step-display); line-height: 0.9; letter-spacing: -0.02em; color: var(--accent-text); }
+  .edition__title { font-size: var(--step-lead); line-height: 1.2; max-width: 20ch; }
+  .edition__main { display: grid; gap: 2.5rem; }
+  .edition__summary { font-size: var(--step-lead); line-height: 1.35; max-width: 40ch; }
+  .edition__pic { display: grid; gap: 0.75rem; }
+  .edition__pic :global(img) { aspect-ratio: 4 / 3; height: auto; }
+  .edition__film :global(video) { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; filter: brightness(0.8); }
+  .events { display: grid; gap: 1.5rem; }
+  .event { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 3fr); gap: var(--gutter); align-items: baseline; }
+  .event__what { display: grid; gap: 0.2rem; }
+  .event__title { font-size: var(--step-lead); line-height: 1.25; }
+  .event--us .event__title { color: var(--accent-text); }
+  .programme { background: var(--surface); padding: clamp(1.25rem, 2.5vw, 2rem); display: grid; gap: 0.75rem; }
+  .programme__h { font-size: var(--step-body); color: var(--muted); }
+
+  .next { padding-block: var(--section); }
+  .next__panel { background: var(--surface); padding: clamp(2rem, 6vw, 5rem); display: grid; gap: 1.25rem; justify-items: start; }
+  .credits { padding-bottom: 3rem; }
+  .credits p { max-width: 110ch; }
+
+  @media (max-width: 860px) {
+    .facts__grid, .edition { grid-template-columns: 1fr; }
+    .facts__row { grid-template-columns: 1fr; gap: 0.2rem; }
+    .edition__side { position: static; }
+    .event { grid-template-columns: 1fr; gap: 0.3rem; }
+  }
+</style>

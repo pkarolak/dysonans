@@ -1,0 +1,34 @@
+---
+interface Props { name: string; label: string; class?: string; eager?: boolean }
+const { name, label, class: cls = '', eager = false } = Astro.props;
+---
+
+<video
+  class:list={['loop-video', cls]}
+  muted
+  loop
+  playsinline
+  preload={eager ? 'auto' : 'none'}
+  poster={`/media/${name}-poster.jpg`}
+  aria-label={label}
+  data-loop-video
+  data-eager={eager ? '' : undefined}
+>
+  {name === 'hero-gorizia' && <source src={`/media/${name}.webm`} type="video/webm" />}
+  <source src={`/media/${name}.mp4`} type="video/mp4" />
+</video>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const saveData = (navigator as any).connection?.saveData;
+  const videos = document.querySelectorAll<HTMLVideoElement>('[data-loop-video]');
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      const v = e.target as HTMLVideoElement;
+      if (e.isIntersecting && !reduce.matches && !saveData) v.play().catch(() => {});
+      else v.pause();
+    }
+  }, { threshold: 0.15 });
+  videos.forEach((v) => io.observe(v));
+  reduce.addEventListener('change', () => videos.forEach((v) => (reduce.matches ? v.pause() : null)));
+</script>

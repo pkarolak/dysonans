@@ -1,0 +1,141 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { conductors, contact } from '../data/site';
+import { routes, t, type Lang } from '../i18n';
+import white from '../assets/photos/white-church.jpg';
+import scores from '../assets/photos/scores-closeup.jpg';
+import madonna from '../assets/photos/church-madonna.jpg';
+import LoopVideo from '../components/LoopVideo.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const pl = lang === 'pl';
+const L = (p: string, e: string) => (pl ? p : e);
+const mail = (subject: string, body = '') => `mailto:${contact.email}?subject=${encodeURIComponent(subject)}${body ? `&body=${encodeURIComponent(body)}` : ''}`;
+
+const intents = [
+  {
+    h: L('Zaproś nas na koncert', 'Invite us to sing'),
+    p: L('Koncerty, festiwale, uroczystości. Napisz, gdzie i kiedy, a odpowiemy z propozycją repertuaru.', 'Concerts, festivals, ceremonies. Tell us where and when and we will reply with a repertoire proposal.'),
+    a: { href: mail(L('Zaproszenie na koncert', 'Concert invitation'), L('Dzień dobry,\n\nData:\nMiejsce:\nOkazja:\n', 'Hello,\n\nDate:\nVenue:\nOccasion:\n')), label: L('Napisz w sprawie koncertu', 'Write about a concert') },
+  },
+  {
+    h: L('Śpiewaj z nami', 'Sing with us'),
+    p: L('Śpiewają u nas studenci i absolwenci poznańskich uczelni. Napisz, jaki masz głos i gdzie śpiewałeś.', 'Our singers are students and graduates of Poznań universities. Tell us your voice part and where you have sung.'),
+    a: { href: mail(L('Chcę śpiewać w Dysonansie', 'I would like to sing with Dysonans')), label: L('Zgłoś się', 'Get in touch') },
+  },
+  {
+    h: L('Kup płytę', 'Buy a CD'),
+    p: L('Trzy płyty są w sprzedaży w Music Island albo bezpośrednio od nas.', 'Three CDs are on sale at Music Island or directly from us.'),
+    a: { href: routes.shop[lang], label: L('Przejdź do sklepu', 'Go to the shop') },
+  },
+];
+---
+
+<Base
+  lang={lang}
+  page="contact"
+  title={L('Kontakt', 'Contact')}
+  description={L('Kontakt z Chórem Kameralnym Dysonans: koncerty, przesłuchania, płyty. Stowarzyszenie Promocji Kultury Cantamen, Poznań.', 'Contact the Dysonans Chamber Choir: concerts, auditions, CDs. Cantamen Association, Poznań.')}
+>
+  <header class="page-head wrap contact-head">
+    <div>
+      <h1 data-focus>{L('Kontakt', 'Contact')}</h1>
+      <p class="lead" data-focus style="--i:1">{L('Napisz albo zadzwoń do Chóru Kameralnego Dysonans: koncerty, przesłuchania, płyty.', 'Write to or call the Dysonans Chamber Choir about concerts, auditions or CDs.')}</p>
+      <p class="contact-big" data-focus style="--i:2"><a class="link" href={`mailto:${contact.email}`}>{contact.email}</a></p>
+      <p class="contact-big nums" data-focus style="--i:3"><a class="link" href={contact.phoneHref}>{contact.phone}</a></p>
+    </div>
+    <figure class="contact-pic" data-reveal>
+      <LoopVideo name="hero-gorizia" eager label={L('Dysonans na scenie w Gorycji', 'Dysonans on stage in Gorizia')} />
+    </figure>
+  </header>
+
+  <section class="intents wrap" aria-labelledby="intents-title">
+    <h2 id="intents-title" class="section-title" data-focus>{L('W jakiej sprawie?', 'What is it about?')}</h2>
+    <ul class="intents__list">
+      {intents.map((it, i) => (
+        <li class="intent" data-reveal style={`--i:${i}`}>
+          <h3 class="intent__h">{it.h}</h3>
+          <p>{it.p}</p>
+          <a class="link" href={it.a.href}>{it.a.label}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="org wrap" aria-labelledby="org-title">
+    <div class="org__pics">
+      <figure class="org__pic shutter" data-reveal>
+        <Image src={white} alt={L('Chór śpiewa w jasnym kościele', 'The choir sings in a white church')} widths={[600, 1000]} sizes="(max-width: 860px) 90vw, 30vw" class="cover lit" />
+      </figure>
+      <figure class="org__pic org__pic--small shutter" data-reveal style="--i:1">
+        <Image src={scores} alt={L('Nuty w dłoniach chórzystów', 'Scores in the singers’ hands')} widths={[400, 700]} sizes="(max-width: 860px) 50vw, 18vw" class="cover lit" />
+      </figure>
+      <figure class="org__pic org__pic--small shutter" data-reveal style="--i:2">
+        <Image src={madonna} alt={L('Chór przed ołtarzem', 'The choir before an altar')} widths={[400, 700]} sizes="(max-width: 860px) 50vw, 18vw" class="cover lit" />
+      </figure>
+    </div>
+    <div class="org__text">
+      <h2 id="org-title" class="section-title" data-focus>{L('Kto za nami stoi', 'Who runs the choir')}</h2>
+      <dl class="org__list" data-reveal>
+        <div><dt class="muted">{L('Organizacja', 'Organisation')}</dt><dd>{t(contact.association, lang)}</dd></div>
+        <div><dt class="muted">NIP</dt><dd class="nums">{contact.nip}</dd></div>
+        <div><dt class="muted">{L('Konto', 'Bank account')}</dt><dd class="nums">{contact.bank.account}<br /><span class="muted small">{contact.bank.name}</span></dd></div>
+        <div><dt class="muted">{L('Biuro', 'Office')}</dt><dd><a class="link" href={`mailto:${contact.emailOffice}`}>{contact.emailOffice}</a></dd></div>
+        <div><dt class="muted">{L('Dyrygenci', 'Conductors')}</dt><dd>{conductors.map((c) => c.name).join(', ')}</dd></div>
+      </dl>
+      <button class="button button--ghost org__copy" type="button" data-copy={contact.bank.account.replace(/\s/g, '')}>
+        <span data-copy-label>{L('Skopiuj numer konta', 'Copy account number')}</span>
+      </button>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--gutter); align-items: end; }
+  .contact-big { font-size: var(--step-head); line-height: 1.1; letter-spacing: -0.02em; margin-top: 1.5rem; overflow-wrap: anywhere; }
+  .contact-big + .contact-big { margin-top: 0.5rem; }
+  .contact-big a { text-decoration-thickness: 0.04em; }
+  .contact-pic { aspect-ratio: 4 / 5; overflow: clip; }
+  .contact-pic :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.75) contrast(1.05); }
+  .contact-head .lead { margin-top: 1.25rem; }
+
+  .intents { padding-block: var(--section); }
+  .intents__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gutter); margin-top: 3rem; }
+  .intent { display: grid; gap: 0.9rem; align-content: start; padding: clamp(1.25rem, 2.5vw, 2rem); background: var(--surface); }
+  .intent:nth-child(2) { margin-top: 3rem; }
+  .intent:nth-child(3) { margin-top: 6rem; }
+  .intent__h { font-size: var(--step-lead); line-height: 1.2; }
+
+  .org { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 6vw, 6rem); align-items: center; padding-bottom: var(--section); }
+  .org__pics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .org__pic { aspect-ratio: 4 / 3; overflow: clip; grid-column: 1 / -1; }
+  .org__pic--small { grid-column: auto; aspect-ratio: 1; }
+  .org__list { margin-top: 2.5rem; display: grid; gap: 1.25rem; }
+  .org__list > div { display: grid; grid-template-columns: 10rem 1fr; gap: var(--gutter); }
+  .org__copy { margin-top: 2rem; }
+
+  @media (max-width: 860px) {
+    .contact-head, .org { grid-template-columns: 1fr; }
+    .intents__list { grid-template-columns: 1fr; }
+    .intent:nth-child(n) { margin-top: 0; }
+    .org__list > div { grid-template-columns: 1fr; gap: 0.2rem; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+    const label = btn.querySelector<HTMLElement>('[data-copy-label]');
+    const original = label?.textContent ?? '';
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy ?? '');
+        if (label) label.textContent = document.documentElement.lang === 'pl' ? 'Skopiowano' : 'Copied';
+      } catch {
+        if (label) label.textContent = btn.dataset.copy ?? '';
+      }
+      setTimeout(() => { if (label) label.textContent = original; }, 2200);
+    });
+  });
+</script>

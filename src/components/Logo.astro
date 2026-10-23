@@ -1,0 +1,84 @@
+---
+import logo from '../assets/brand/logo-paths.json';
+
+interface Props {
+  ink?: string;
+  red?: string;
+  class?: string;
+  label?: string;
+  animate?: boolean;
+}
+const { ink = 'currentColor', red = 'var(--brand-red)', class: cls = '', label = 'Dysonans', animate = false } = Astro.props;
+const { viewBox, strokeWidth, glyphs, bar } = logo;
+---
+
+<svg
+  class:list={['logo', cls, { 'logo--animate': animate }]}
+  viewBox={viewBox}
+  role="img"
+  aria-label={label}
+  data-logo
+>
+  <title>{label}</title>
+  <g fill="none" stroke-width={strokeWidth} stroke-linecap="butt" stroke-linejoin="miter">
+    {glyphs.map((g, i) => (
+      <path
+        class={`logo__glyph logo__glyph--${g.id}`}
+        d={g.d}
+        stroke={g.color === 'red' ? red : ink}
+        pathLength="1"
+        style={`--i:${i}`}
+        data-glyph={g.id}
+      />
+    ))}
+  </g>
+  <rect class="logo__bar-track" x={bar.x} y={bar.y} width={bar.w} height={bar.h} fill={red} />
+  <rect class="logo__bar" x={bar.x} y={bar.y} width={bar.w} height={bar.h} fill={red} data-logo-bar />
+</svg>
+
+<style>
+  .logo { display: block; width: 100%; height: auto; overflow: visible; }
+  .logo__glyph--y { transform-box: fill-box; transform-origin: 50% 100%; }
+  .logo__bar { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0); opacity: 0; transition: transform 500ms linear; }
+  .logo__bar-track { transition: opacity var(--t-ui) ease; }
+  :global(.logo.is-playing) .logo__bar-track { opacity: 0.3; }
+  :global(.logo.is-playing) .logo__bar { opacity: 1; transform: scaleX(var(--progress, 0)); }
+  :global(.logo.is-playing) .logo__glyph--y { animation: fork-hum 180ms linear infinite; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .logo--animate .logo__glyph {
+      stroke-dasharray: 1 1;
+      stroke-dashoffset: 1;
+      animation:
+        glyph-draw 760ms var(--ease-out) calc(80ms + var(--i) * 55ms) forwards,
+        glyph-tune 1100ms var(--ease-expo) calc(80ms + var(--i) * 55ms) both;
+    }
+    :global(.js) .logo--animate .logo__glyph--d { --tune: -16px; }
+    :global(.js) .logo--animate .logo__glyph--s1 { --tune: 12px; }
+    :global(.js) .logo--animate .logo__glyph--o { --tune: -9px; }
+    :global(.js) .logo--animate .logo__glyph--n1 { --tune: 15px; }
+    :global(.js) .logo--animate .logo__glyph--a { --tune: -12px; }
+    :global(.js) .logo--animate .logo__glyph--n2 { --tune: 8px; }
+    :global(.js) .logo--animate .logo__glyph--s2 { --tune: -14px; }
+    :global(.js) .logo--animate .logo__glyph--y {
+      animation:
+        glyph-draw 760ms var(--ease-out) 135ms forwards,
+        fork-strike 1400ms var(--ease-out) 900ms both;
+    }
+    :global(.js) .logo--animate .logo__bar-track { transform-box: fill-box; transform-origin: 0 50%; animation: bar-in 700ms var(--ease-expo) 700ms both; }
+  }
+  @keyframes glyph-draw { to { stroke-dashoffset: 0; } }
+  @keyframes glyph-tune { from { transform: translateY(var(--tune, 0)); } to { transform: none; } }
+  @keyframes bar-in { from { transform: scaleX(0); } to { transform: none; } }
+  @keyframes fork-strike {
+    0% { transform: rotate(0deg); }
+    8% { transform: rotate(1.6deg); }
+    18% { transform: rotate(-1.3deg); }
+    30% { transform: rotate(0.9deg); }
+    44% { transform: rotate(-0.6deg); }
+    60% { transform: rotate(0.35deg); }
+    78% { transform: rotate(-0.15deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes fork-hum { 0%, 100% { transform: rotate(-0.35deg); } 50% { transform: rotate(0.35deg); } }
+</style>

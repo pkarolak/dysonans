@@ -1,0 +1,363 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import LoopVideo from '../components/LoopVideo.astro';
+import Strip, { type Frame } from '../components/Strip.astro';
+import ResolveIt from '../components/ResolveIt.astro';
+import { albums, concerts, conductors, counts, contact } from '../data/site';
+import { routes, t, type Lang } from '../i18n';
+
+import scores from '../assets/photos/scores-closeup.jpg';
+import golden from '../assets/photos/choir-golden-church.jpg';
+import madonna from '../assets/photos/church-madonna.jpg';
+import conductorPhoto from '../assets/photos/church-conductor.jpg';
+import churchConcert from '../assets/photos/church-concert.jpg';
+import nave from '../assets/photos/rome-st-peters-nave.jpg';
+import altar from '../assets/photos/rome-st-peters-altar.jpg';
+import stained from '../assets/photos/hall-stained-glass.jpg';
+import curtains from '../assets/photos/stage-red-curtains.jpg';
+import wooden from '../assets/photos/wooden-church.jpg';
+import white from '../assets/photos/white-church.jpg';
+import bells from '../assets/video-posters/1D5B-JYkZKg.jpg';
+import bolivia from '../assets/video-posters/ujEyS3X6KIM.jpg';
+import carnival from '../assets/video-posters/rSwlNdnzYEo.jpg';
+import coverAche from '../assets/covers/a-che-angele.jpg';
+import coverSalve from '../assets/covers/salve-regina.jpg';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const pl = lang === 'pl';
+const L = (p: string, e: string) => (pl ? p : e);
+
+const frames: Frame[] = [
+  { src: curtains, alt: L('Chór na scenie przed czerwoną kurtyną', 'The choir on stage in front of a red curtain'), caption: 'The Lamb · John Tavener' },
+  { src: altar, alt: L('Chór pod baldachimem Berniniego w Bazylice św. Piotra', 'The choir beneath Bernini’s baldachin in St Peter’s'), caption: L('Bazylika św. Piotra, Rzym', 'St Peter’s Basilica, Rome') },
+  { src: wooden, alt: L('Chór w drewnianym kościele', 'The choir in a wooden church'), caption: 'Vox in Rama · Mikołaj Zieleński' },
+  { src: stained, alt: L('Koncert w sali z witrażami', 'A concert in a hall with stained glass'), caption: 'The Lamb · John Tavener' },
+  { src: bolivia, alt: L('Chórzyści na lotnisku przed wylotem do Boliwii', 'Singers at the airport before flying to Bolivia'), caption: L('Boliwia, dzień zero', 'Bolivia, day zero') },
+  { src: churchConcert, alt: L('Chór w prezbiterium kościoła', 'The choir in a church chancel'), caption: 'Tu es Petrus · Palestrina' },
+  { src: white, alt: L('Chór w jasnym kościele', 'The choir in a white church'), caption: L('Zimowa droga · Wissarion Szebalin', 'Winter Road · Vissarion Shebalin') },
+  { src: bells, alt: L('Chórzyści w czapkach Mikołaja', 'Singers in Santa hats'), caption: 'Jingle Bells · opr. Jerzy Mackiewicz' },
+  { src: nave, alt: L('Nawa Bazyliki św. Piotra podczas występu', 'The nave of St Peter’s during a performance'), caption: L('Bazylika św. Piotra, Rzym', 'St Peter’s Basilica, Rome') },
+  { src: carnival, alt: L('Kadr z filmu „Wiele pasji, jedna miłość”', 'A still from the film “Many passions, one love”'), caption: L('Wiele pasji, jedna miłość', 'Many passions, one love') },
+  { src: madonna, alt: L('Chór przed ołtarzem z obrazem Madonny', 'The choir before an altar with a Madonna'), caption: 'Cantate Domino · Claudio Monteverdi' },
+  { src: golden, alt: L('Chór w złoconym kościele', 'The choir in a gilded church'), caption: 'Cantate Domino · Claudio Monteverdi' },
+];
+
+const ache = albums.find((a) => a.id === 'a-che-angele')!;
+const salve = albums.find((a) => a.id === 'salve-regina')!;
+const showcase = [
+  { album: ache, cover: coverAche, bg: golden, bgAlt: L('Chór śpiewa w złoconym kościele', 'The choir sings in a gilded church'), variant: L('CD · Cantamen CAN 004 · nagranie na żywo', 'CD · Cantamen CAN 004 · live recording') },
+  { album: salve, cover: coverSalve, bg: altar, bgAlt: L('Chór przed ołtarzem Bazyliki św. Piotra', 'The choir before the altar of St Peter’s'), variant: L('CD · RecArt 0073 · pierwsze nagranie', 'CD · RecArt 0073 · first recording') },
+];
+
+const stats = [
+  { n: '1991', s: L('Pierwsza próba. Od tamtej pory chór prowadzi Magdalena Wdowicka-Mackiewicz.', 'Our first rehearsal. Magdalena Wdowicka-Mackiewicz has led the choir ever since.') },
+  { n: String(counts.grandPrix), s: L('Grand Prix: Międzyzdroje 2011, Łódź 2012, Bielsko-Biała 2022.', 'Grand Prix: Międzyzdroje 2011, Łódź 2012, Bielsko-Biała 2022.') },
+  { n: String(counts.firsts), s: L('pierwszych miejsc w kategoriach konkursowych od 2008 roku.', 'first places in competition categories since 2008.') },
+  { n: String(counts.countries), s: L('krajów, w których śpiewaliśmy na konkursach i festiwalach, od Boliwii po Meksyk.', 'countries where we have sung at competitions and festivals, from Bolivia to Mexico.') },
+];
+
+const byYear = concerts.reduce<Record<string, typeof concerts>>((acc, c) => {
+  const y = c.date.en.match(/\d{4}/)![0];
+  (acc[y] ||= []).push(c);
+  return acc;
+}, {});
+const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
+
+const join = `mailto:${contact.email}?subject=${encodeURIComponent(L('Chcę śpiewać w Dysonansie', 'I would like to sing with Dysonans'))}&body=${encodeURIComponent(L('Dzień dobry,\n\nśpiewam (głos): \nDoświadczenie chóralne: \nUczelnia / kierunek: \n', 'Hello,\n\nMy voice part: \nChoral experience: \nUniversity / course: \n'))}`;
+---
+
+<Base
+  lang={lang}
+  page="home"
+  title={L('Chór Kameralny Dysonans · Poznań', 'Dysonans Chamber Choir · Poznań')}
+  description={L('Chór kameralny z Poznania, od 1991 roku. Grand Prix, nagrania, festiwal Muzyka Warta Słuchania.', 'A chamber choir from Poznań, since 1991. Grand Prix winners, recordings and the Muzyka Warta Słuchania festival.')}
+  navOver
+  onRepeat
+>
+  <!-- Hero: the name draws itself over the stage in Gorizia -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__media">
+      <LoopVideo name="hero-gorizia" eager label={L('Chór Dysonans na scenie konkursu Seghizzi w Gorycji, 2016', 'Dysonans on stage at the Seghizzi competition in Gorizia, 2016')} />
+    </div>
+    <h1 id="hero-title" class="hero__title">
+      <span class="sr-only">{L('Chór Kameralny Dysonans', 'Dysonans Chamber Choir')}</span>
+      <Logo animate label="Dysonans" />
+    </h1>
+    <p class="hero__line" data-focus style="--i:8">{L('Chór kameralny z Poznania. Śpiewamy od 1991 roku.', 'A chamber choir from Poznań, singing since 1991.')}</p>
+    <a class="hero__action button" href="#nastroj" data-focus style="--i:9">{L('Nastrój chór', 'Tune the choir')}</a>
+    <p class="hero__credit small" data-focus style="--i:10">{L('Gorycja, Grand Prix Seghizzi, 2016', 'Gorizia, Seghizzi Grand Prix, 2016')}</p>
+  </section>
+
+  <!-- The lit strip: rooms we have sung in -->
+  <section class="rooms section" aria-labelledby="rooms-title">
+    <div class="wrap rooms__head">
+      <h2 id="rooms-title" class="sub" data-focus>{L('Sale, w których nas słychać', 'Rooms we have filled')}</h2>
+      <p class="muted small" data-focus style="--i:1">{L('Przeciągnij w bok, żeby przejść dalej.', 'Drag sideways to walk on.')}</p>
+    </div>
+    <div data-reveal>
+      <Strip frames={frames} label={L('Zdjęcia z koncertów', 'Concert photographs')} />
+    </div>
+  </section>
+
+  <!-- Pinned: the name -->
+  <section class="name" aria-labelledby="name-title">
+    <div class="name__grid wrap grid">
+      <div class="name__pin">
+        <h2 id="name-title" class="sub" data-focus>{L('Skąd ta nazwa', 'Why the name')}</h2>
+        <p class="statement name__statement" data-focus style="--i:1">
+          {L('Dysonans to współbrzmienie, które chce się rozwiązać. Śpiewamy tak, żeby było słychać, dokąd zmierza.', 'A dissonance is a chord that wants to resolve. We sing so that you can hear where it is going.')}
+        </p>
+        <p class="name__note muted" data-focus style="--i:2">
+          {L('Nazwę wybrała w 1991 roku grupa studentów poznańskich uczelni. W logo litera Y jest kamertonem, a ostatnie S stoi odwrotnie, jak nuta nie na swoim miejscu.', 'A group of Poznań students chose the name in 1991. In the logo the Y is a tuning fork, and the last S is reversed, like a note out of place.')}
+        </p>
+      </div>
+      <div class="name__pics">
+        <figure class="name__pic name__pic--a shutter" data-reveal><Image src={madonna} alt={L('Chór przed ołtarzem', 'The choir before an altar')} widths={[600, 1000]} sizes="(max-width: 860px) 64vw, 26vw" class="cover lit" /></figure>
+        <figure class="name__pic name__pic--b shutter" data-reveal><Image src={nave} alt={L('Bazylika św. Piotra w Rzymie podczas występu chóru', 'St Peter’s Basilica in Rome during a performance')} widths={[800, 1400]} sizes="(max-width: 860px) 78vw, 38vw" class="cover lit" /></figure>
+        <figure class="name__pic name__pic--c shutter" data-reveal><Image src={scores} alt={L('Chórzyści z nutami w dłoniach', 'Singers with scores in hand')} widths={[500, 900]} sizes="(max-width: 860px) 52vw, 20vw" class="cover lit" /></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- The live thing -->
+  <div id="nastroj"><ResolveIt lang={lang} /></div>
+
+  <!-- Showcase: the records as products -->
+  <section class="show" aria-labelledby="show-title">
+    {showcase.map((s, i) => (
+      <div class="show__frame" style={`--col:${i + 2}`}>
+        <Image src={s.bg} alt={s.bgAlt} widths={[900, 1600, 2400]} sizes="100vw" class="show__bg cover lit" />
+        <div class="show__grid wrap">
+          <article class="show__card" data-reveal>
+            <Image src={s.cover} alt={L(`Okładka płyty ${s.album.title}`, `${s.album.title} album cover`)} width={360} height={360} class="show__cover" />
+            {i === 0
+              ? <h2 id="show-title" class="show__name">{s.album.title}</h2>
+              : <h3 class="show__name">{s.album.title}</h3>}
+            <p class="show__variant">{s.variant}</p>
+            <p class="show__price nums">{s.album.buy?.price}</p>
+            <div class="show__actions">
+              <a class="button button--ghost" href={s.album.buy?.url} target="_blank" rel="noopener">{L('Kup w Music Island', 'Buy at Music Island')}</a>
+              {s.album.spotifyAlbum && <a class="link small" href={`https://open.spotify.com/album/${s.album.spotifyAlbum}`} target="_blank" rel="noopener">{L('Posłuchaj na Spotify', 'Listen on Spotify')}</a>}
+            </div>
+          </article>
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <!-- Stats -->
+  <section class="stats wrap" aria-labelledby="stats-title">
+    <div class="stats__grid grid">
+      <div class="stats__block">
+        <h2 id="stats-title" class="stats__title sub" data-focus>{L('Bez podnoszenia głosu', 'Without raising our voice')}</h2>
+        <dl class="stats__list">
+          {stats.map((s, i) => (
+            <div class="stats__row" data-reveal style={`--i:${i}`}>
+              <dt class="nums">{s.n}</dt>
+              <dd>{s.s}</dd>
+            </div>
+          ))}
+        </dl>
+        <a class="link stats__more" href={routes.awards[lang]} data-reveal style="--i:4">{L('Wszystkie nagrody', 'All awards')}</a>
+      </div>
+      <figure class="stats__pic shutter" data-reveal>
+        <Image src={stained} alt="" widths={[500, 900]} sizes="(max-width: 860px) 56vw, 22vw" class="cover lit" />
+      </figure>
+    </div>
+  </section>
+
+  <!-- About: the conductors -->
+  <section class="about" aria-labelledby="about-title">
+    <div class="about__panel">
+      <div class="about__left">
+        <h2 id="about-title" class="about__title" data-focus>{L('Kto stoi przed chórem', 'Who stands before us')}</h2>
+        <figure class="about__arch" data-reveal>
+          <Image src={conductorPhoto} alt={L('Dyrygentka przed chórem w kościele', 'The conductor before the choir in a church')} widths={[700, 1200]} sizes="(max-width: 860px) 86vw, 38vw" class="cover lit" />
+        </figure>
+      </div>
+      <div class="about__right">
+        {conductors.map((c, i) => (
+          <div class="about__block" data-reveal style={`--i:${i}`}>
+            <h3 class="about__name">{c.name}</h3>
+            <p class="about__role muted">{t(c.role, lang)}</p>
+            <p class="about__bio">{t(c.bio, lang)}</p>
+          </div>
+        ))}
+        <a class="button" href={routes.awards[lang]} data-reveal style="--i:2">{L('Zobacz nagrody', 'See the awards')}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- List: recent concerts -->
+  <section class="gigs wrap" aria-labelledby="gigs-title">
+    <h2 id="gigs-title" class="section-title" data-focus>{L('Ostatnio na scenie', 'Lately on stage')}</h2>
+    {years.map((y) => (
+      <div class="gigs__year">
+        <h3 class="gigs__y nums">{y}</h3>
+        <ul class="gigs__rows">
+          {byYear[y].map((c, i) => (
+            <li class="gigs__row" data-reveal style={`--i:${i}`}>
+              <span class="gigs__what">{t(c.title, lang)}</span>
+              <span class="gigs__where">{t(c.place, lang)}</span>
+              <span class="gigs__when nums">{t(c.date, lang)}{c.time && `, ${c.time}`}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+
+  <!-- CTA: the fork returns -->
+  <section class="fork" aria-labelledby="fork-title">
+    <svg class="fork__shape" viewBox="166 -10 121 250" role="img" aria-label={L('Kamerton z logo Dysonansu', 'The tuning fork from the Dysonans logo')} data-reveal>
+      <path d="M186.5 -10L186.5 99.5A40 40 0 0 0 266.5 99.5L266.5 -10M226.5 130.5L226.5 240" fill="none" stroke="var(--brand-red)" stroke-width="21" />
+    </svg>
+    <div class="fork__text">
+      <h2 id="fork-title" class="fork__title" data-focus>{L('Zaśpiewaj z nami', 'Sing with us')}</h2>
+      <p data-focus style="--i:1">{L('Śpiewają u nas studenci i absolwenci poznańskich uczelni. Jeśli czytasz nuty i lubisz napięcie, które się rozwiązuje, napisz.', 'Our singers are students and graduates of Poznań universities. If you read music and like tension that resolves, write to us.')}</p>
+      <p class="fork__fact" data-focus style="--i:2">{L('Próby w Poznaniu', 'Rehearsals in Poznań')}</p>
+      <a class="button button--ghost" href={join} data-focus style="--i:3">{L('Napisz do nas', 'Write to us')}</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Hero */
+  .hero {
+    position: relative; min-height: 100svh; display: grid; overflow: clip;
+    grid-template-columns: 1fr auto; grid-template-rows: 1fr auto auto;
+    padding: 0 var(--margin) clamp(1.75rem, 5vh, 2.75rem);
+  }
+  .hero__media { position: absolute; inset: 0; z-index: -1; }
+  .hero__media :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.42) contrast(1.08) saturate(0.85); }
+  .hero__title { grid-column: 1 / -1; align-self: end; margin-bottom: clamp(2rem, 7vh, 4.5rem); color: var(--ink); }
+  .hero__title :global(.logo) { width: min(100%, 1400px); }
+  .hero__line { grid-column: 1; align-self: end; font-size: var(--step-lead); line-height: 1.3; max-width: 26ch; }
+  .hero__action { grid-column: 2; align-self: end; }
+  .hero__credit { grid-column: 1 / -1; margin-top: 1.25rem; color: var(--muted); }
+  @media (max-width: 700px) {
+    .hero { grid-template-columns: 1fr; grid-template-rows: 1fr auto auto auto; }
+    .hero__action { grid-column: 1; justify-self: start; margin-top: 1.5rem; }
+  }
+
+  /* Rooms */
+  .rooms { padding-block: clamp(6rem, 18vh, 12rem); }
+  .rooms__head { display: grid; gap: 0.4rem; margin-bottom: 2rem; }
+
+  /* Name, pinned */
+  .name { padding-block: clamp(4rem, 10vh, 8rem); }
+  .name__grid { align-items: start; }
+  .name__pin { grid-column: 1 / span 6; position: sticky; top: 0; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
+  .name__statement { max-width: 30ch; }
+  .name__note { max-width: 44ch; }
+  .name__pics { grid-column: 8 / -1; display: grid; gap: 35svh; padding-block: 30svh; }
+  .name__pic { overflow: clip; }
+  .name__pic--a { aspect-ratio: 4 / 5; width: 68%; }
+  .name__pic--b { aspect-ratio: 16 / 10; width: 100%; }
+  .name__pic--c { aspect-ratio: 1; width: 52%; justify-self: center; }
+  @media (max-width: 860px) {
+    .name__pin { grid-column: 1 / -1; position: static; min-height: 0; padding-block: 4rem 2rem; }
+    .name__pics { grid-column: 1 / -1; gap: 3rem; padding-block: 0; }
+    .name__pic--a { width: 64%; }
+    .name__pic--b { width: 78%; justify-self: end; }
+  }
+
+  /* Showcase */
+  .show__frame { position: relative; min-height: 100svh; display: grid; align-items: center; overflow: clip; }
+  .show__bg { position: absolute; inset: 0; }
+  .show__grid { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gutter); width: 100%; }
+  .show__card {
+    grid-column: var(--col); background: var(--ink); color: var(--paper-ink);
+    padding: clamp(1.25rem, 2vw, 1.75rem); display: grid; gap: 0.5rem; align-content: start; min-height: 52svh;
+  }
+  .show__cover { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; margin-bottom: 0.75rem; }
+  .show__name { font-size: var(--step-lead); line-height: 1.1; }
+  .show__variant { font-size: var(--step-small); color: #4A5051; }
+  .show__price { font-size: var(--step-lead); margin-top: 0.25rem; }
+  .show__actions { display: grid; gap: 0.75rem; margin-top: auto; padding-top: 1rem; justify-items: start; }
+  .show__actions .button { width: 100%; background: var(--paper-ink); color: var(--ink); }
+  @media (hover: hover) and (pointer: fine) { .show__actions .button:hover { background: #000; } }
+  @media (max-width: 1100px) { .show__card { grid-column: span 2; } .show__frame:nth-child(2) .show__card { grid-column: 3 / span 2; } }
+  @media (max-width: 700px) {
+    .show__frame { align-items: end; }
+    .show__grid { display: block; padding: 0; }
+    .show__card, .show__frame:nth-child(2) .show__card { min-height: 0; grid-template-columns: 1fr 6rem; column-gap: 1rem; }
+    .show__cover { grid-column: 2; grid-row: 1 / span 3; margin: 0; }
+    .show__actions { grid-column: 1 / -1; }
+  }
+
+  /* Stats */
+  .stats { padding-block: clamp(8rem, 22vh, 14rem); }
+  .stats__block { grid-column: 2 / span 6; }
+  .stats__title { margin-left: calc(8.25rem + 1.5rem); margin-bottom: 3.5rem; }
+  .stats__list { display: grid; gap: 1.75rem; }
+  .stats__row { display: grid; grid-template-columns: 8.25rem 1fr; column-gap: 1.5rem; align-items: baseline; }
+  .stats__row dt { text-align: right; font-size: clamp(1.75rem, 1.4rem + 1vw, 2rem); font-weight: 500; line-height: 1; }
+  .stats__row dd { color: var(--muted); max-width: 40ch; }
+  .stats__more { display: inline-block; margin: 2.5rem 0 0 calc(8.25rem + 1.5rem); }
+  .stats__pic { grid-column: 9 / span 3; aspect-ratio: 1; margin-top: 5rem; overflow: clip; }
+  @media (max-width: 860px) {
+    .stats__block { grid-column: 1 / -1; }
+    .stats__row { grid-template-columns: 5.5rem 1fr; }
+    .stats__row dt { font-size: 1.5rem; }
+    .stats__title, .stats__more { margin-left: calc(5.5rem + 1.5rem); }
+    .stats__pic { grid-column: 6 / -1; margin-top: 3.5rem; }
+  }
+
+  /* About */
+  .about { padding-inline: 20px; }
+  .about__panel {
+    position: relative; overflow: clip; background: var(--surface); min-height: 110svh;
+    display: grid; grid-template-columns: 63% 1fr; padding: 56px;
+  }
+  .about__left { display: flex; flex-direction: column; justify-content: space-between; }
+  .about__title { font-size: var(--step-head); line-height: 1; letter-spacing: -0.02em; max-width: 12ch; }
+  .about__arch {
+    width: 38vw; aspect-ratio: 4 / 5; margin-bottom: calc(-56px - 7.6vw); overflow: clip;
+    border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+  }
+  .about__right { display: grid; gap: 4rem; align-content: start; max-width: 22rem; }
+  .about__name { font-size: var(--step-lead); line-height: 1.15; }
+  .about__role { margin-top: 0.25rem; font-size: var(--step-small); }
+  .about__bio { margin-top: 0.75rem; }
+  .about__right .button { justify-self: start; }
+  @media (max-width: 860px) {
+    .about { padding-inline: 10px; }
+    .about__panel { grid-template-columns: 1fr; padding: 28px 20px 0; min-height: 0; gap: 3rem; }
+    .about__left { display: contents; }
+    .about__arch { order: 3; width: 86vw; max-width: 100%; justify-self: center; margin-bottom: -27%; }
+    .about__right { max-width: none; gap: 2.5rem; }
+  }
+
+  /* Concerts */
+  .gigs { padding-block: clamp(7rem, 18vh, 12rem); }
+  .gigs__year { margin-top: 4.5rem; }
+  .gigs__y { position: sticky; top: 4.5rem; background: var(--bg); color: var(--accent-text); font-size: clamp(1.25rem, 2.1vw, 1.875rem); padding-block: 0.4rem 1.25rem; z-index: 1; }
+  .gigs__row { display: grid; grid-template-columns: 33% 33% 1fr; font-size: clamp(1.25rem, 2.1vw, 1.875rem); line-height: 1.5; }
+  .gigs__when { text-align: right; }
+  .gigs__where { color: var(--muted); }
+  @media (max-width: 860px) {
+    .gigs__row { grid-template-columns: 1fr auto; line-height: 1.3; margin-bottom: 1.1rem; }
+    .gigs__what { grid-column: 1 / -1; font-size: 1.375rem; }
+    .gigs__where, .gigs__when { font-size: var(--step-small); }
+  }
+
+  /* Fork */
+  .fork { position: relative; min-height: 90svh; overflow: clip; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); padding-inline: var(--margin); align-items: center; }
+  .fork__shape { position: absolute; left: -4vw; bottom: -18svh; height: 125svh; width: auto; max-width: none; }
+  .fork__text { grid-column: 9 / span 4; position: relative; display: grid; gap: 1rem; justify-items: start; }
+  .fork__title { font-size: clamp(2rem, 1.6rem + 1vw, 2.5rem); line-height: 1.05; }
+  .fork__fact { font-size: var(--step-lead); }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .fork__shape[data-reveal] { opacity: 1; transform: translateY(12%); transition: transform 1600ms var(--ease-expo); }
+    :global(.js) .fork__shape[data-reveal].is-in { transform: none; }
+  }
+  @media (max-width: 860px) {
+    .fork { display: flex; flex-direction: column; padding-block: 5rem 0; min-height: 0; }
+    .fork__text { order: -1; margin-bottom: 3rem; }
+    .fork__shape { position: relative; left: auto; bottom: auto; height: 60svh; margin: 0 0 -10svh auto; }
+  }
+</style>

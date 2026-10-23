@@ -1,0 +1,130 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import LoopVideo from '../components/LoopVideo.astro';
+import { awards, counts } from '../data/site';
+import { routes, t, type Lang } from '../i18n';
+import curtains from '../assets/photos/stage-red-curtains.jpg';
+import stained from '../assets/photos/hall-stained-glass.jpg';
+import bolivia from '../assets/video-posters/ujEyS3X6KIM.jpg';
+import wooden from '../assets/photos/wooden-church.jpg';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const pl = lang === 'pl';
+const L = (p: string, e: string) => (pl ? p : e);
+
+const grand = awards.filter((a) => a.tier === 'grand-prix');
+const years = [...new Set(awards.map((a) => a.year))].sort((a, b) => b - a);
+const month = (d: string) => {
+  const [y, m] = d.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString(pl ? 'pl-PL' : 'en-GB', { month: 'long' });
+};
+---
+
+<Base
+  lang={lang}
+  page="awards"
+  title={L('Nagrody', 'Awards')}
+  description={L(`Grand Prix, ${counts.firsts} pierwszych miejsc i konkursy w ${counts.countries} krajach. Pełna lista nagród Chóru Kameralnego Dysonans od 2008 roku.`, `Grand Prix wins, ${counts.firsts} first places and competitions in ${counts.countries} countries. The full list of Dysonans awards since 2008.`)}
+>
+  <header class="page-head wrap">
+    <h1 data-focus>{L('Nagrody', 'Awards')}</h1>
+    <p class="lead" data-focus style="--i:1">
+      {L(`Od 2008 roku: ${counts.grandPrix} Grand Prix, ${counts.firsts} pierwszych miejsc w kategoriach i konkursy w ${counts.countries} krajach, od Gorycji po Boliwię.`, `Since 2008: ${counts.grandPrix} Grand Prix, ${counts.firsts} category first places and competitions in ${counts.countries} countries, from Gorizia to Bolivia.`)}
+    </p>
+  </header>
+
+  <section class="gp wrap" aria-labelledby="gp-title">
+    <h2 id="gp-title" class="section-title" data-focus>{L('Trzy razy Grand Prix', 'Three times Grand Prix')}</h2>
+    <ol class="gp__list">
+      {grand.map((a, i) => (
+        <li class="gp__item" data-reveal style={`--i:${i}`}>
+          <span class="gp__year nums">{a.year}</span>
+          <span class="gp__what">
+            <span class="gp__event">{t(a.event, lang)}</span>
+            <span class="gp__city muted">{t(a.city, lang)}{a.results.length > 1 && ` · ${a.results.slice(1).map((r) => t(r, lang)).join(' · ')}`}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="moment" aria-labelledby="moment-title">
+    <div class="moment__media">
+      <LoopVideo name="hero-gorizia" label={L('Dysonans na scenie w Gorycji, 2016', 'Dysonans on stage in Gorizia, 2016')} />
+    </div>
+    <div class="moment__card glass">
+      <h2 id="moment-title" class="moment__title">{L('Gorycja, lipiec 2016', 'Gorizia, July 2016')}</h2>
+      <p>{L('Na konkursie Seghizzi: I miejsce za muzykę barokową, II za renesansową, nagroda „Domenico Cieri” za program i 5. miejsce w konkursie o Grand Prix.', 'At the Seghizzi competition: first place for Baroque music, second for Renaissance, the “Domenico Cieri” prize for the programme and fifth place in the Grand Prix.')}</p>
+    </div>
+  </section>
+
+  <section class="all wrap" aria-labelledby="all-title">
+    <div class="all__head">
+      <h2 id="all-title" class="section-title" data-focus>{L('Wszystko po kolei', 'Everything, in order')}</h2>
+      <div class="all__pics" aria-hidden="true">
+        <figure class="shutter" data-reveal><Image src={curtains} alt="" widths={[400, 700]} sizes="18vw" class="cover lit" /></figure>
+        <figure class="shutter" data-reveal style="--i:1"><Image src={stained} alt="" widths={[400, 700]} sizes="18vw" class="cover lit" /></figure>
+        <figure class="shutter" data-reveal style="--i:2"><Image src={bolivia} alt="" widths={[400, 700]} sizes="18vw" class="cover lit" /></figure>
+        <figure class="shutter" data-reveal style="--i:3"><Image src={wooden} alt="" widths={[400, 700]} sizes="18vw" class="cover lit" /></figure>
+      </div>
+    </div>
+    {years.map((y) => (
+      <div class="all__year">
+        <h3 class="all__y nums">{y}</h3>
+        <ul class="all__rows">
+          {awards.filter((a) => a.year === y).map((a) => (
+            <li class:list={['all__row', `all__row--${a.tier}`]} data-reveal>
+              <span class="all__event">{t(a.event, lang)}</span>
+              <span class="all__place muted">{t(a.city, lang)}, {t(a.country, lang)} · {month(a.date)}</span>
+              <ul class="all__results">
+                {a.results.map((r) => <li>{t(r, lang)}</li>)}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+    <p class="all__more" data-reveal>
+      <a class="button" href={routes.music[lang]}>{L('Posłuchaj, jak to brzmi', 'Hear how it sounds')}</a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .gp { padding-block: calc(var(--section) / 2) var(--section); }
+  .gp__list { margin-top: 3rem; display: grid; gap: 2.5rem; }
+  .gp__item { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); column-gap: var(--gutter); align-items: baseline; }
+  .gp__year { font-size: var(--step-head); line-height: 1; letter-spacing: -0.02em; color: var(--accent-text); }
+  .gp__what { display: grid; gap: 0.4rem; }
+  .gp__event { font-size: var(--step-lead); line-height: 1.25; }
+  .gp__city { max-width: 60ch; }
+
+  .moment { position: relative; min-height: 100svh; display: grid; align-items: end; overflow: clip; }
+  .moment__media { position: absolute; inset: 0; }
+  .moment__media :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.55); }
+  .moment__card { position: relative; margin: var(--margin); padding: clamp(1.5rem, 3vw, 2.5rem); max-width: 34rem; display: grid; gap: 1rem; }
+  .moment__title { font-size: var(--step-lead); line-height: 1.2; }
+
+  .all { padding-block: var(--section); }
+  .all__head { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--gutter); align-items: end; }
+  .all__pics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .all__pics figure { aspect-ratio: 3 / 4; overflow: clip; }
+  .all__year { margin-top: 4.5rem; }
+  .all__y { position: sticky; top: 4.5rem; z-index: 1; background: var(--bg); color: var(--accent-text); font-size: clamp(1.25rem, 2.1vw, 1.875rem); padding-block: 0.4rem 1.25rem; }
+  .all__rows { display: grid; gap: 2rem; }
+  .all__row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr); column-gap: var(--gutter); align-items: baseline; }
+  .all__event { font-size: var(--step-lead); line-height: 1.25; }
+  .all__results { display: grid; gap: 0.2rem; }
+  .all__row--stage .all__results { color: var(--muted); }
+  .all__more { margin-top: 5rem; }
+
+  @media (max-width: 860px) {
+    .gp__item { grid-template-columns: 4.5rem 1fr; }
+    .gp__year { font-size: var(--step-lead); }
+    .all__head { grid-template-columns: 1fr; gap: 2rem; }
+    .all__row { grid-template-columns: 1fr; gap: 0.4rem; }
+    .moment__card { margin: 10px; }
+  }
+</style>

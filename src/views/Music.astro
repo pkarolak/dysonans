@@ -1,0 +1,133 @@
+---
+import Base from '../layouts/Base.astro';
+import SpotifyAlbum from '../components/SpotifyAlbum.astro';
+import VideoFacade from '../components/VideoFacade.astro';
+import DragRow from '../components/DragRow.astro';
+import LoopVideo from '../components/LoopVideo.astro';
+import { albums, contact, signatureTrack, videos } from '../data/site';
+import { routes, t, type Lang } from '../i18n';
+import type { ImageMetadata } from 'astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const pl = lang === 'pl';
+const L = (p: string, e: string) => (pl ? p : e);
+
+const covers = import.meta.glob<{ default: ImageMetadata }>('../assets/covers/*.jpg', { eager: true });
+const cover = (id: string) => covers[`../assets/covers/${id}.jpg`].default;
+
+const concerts = videos.filter((v) => v.kind === 'concert');
+const [feature, ...rest] = concerts;
+const films = videos.filter((v) => v.kind === 'film');
+---
+
+<Base
+  lang={lang}
+  page="music"
+  title={L('Muzyka', 'Music')}
+  description={L('Płyty Chóru Kameralnego Dysonans na Spotify i w sklepie, nagrania koncertowe i filmy z tras.', 'Dysonans Chamber Choir albums on Spotify and in the shop, concert recordings and tour films.')}
+>
+  <header class="page-head wrap music-head">
+    <div>
+      <h1 data-focus>{L('Muzyka', 'Music')}</h1>
+      <p class="lead" data-focus style="--i:1">{L('Od Palestriny po Mäntyjärviego. Cztery płyty i koncerty, które można obejrzeć.', 'From Palestrina to Mäntyjärvi. Four albums and concerts you can watch.')}</p>
+      <div class="head-actions" data-focus style="--i:2">
+        <a class="button" href={contact.spotify} target="_blank" rel="noopener">{L('Dysonans na Spotify', 'Dysonans on Spotify')}</a>
+        <a class="link" href={contact.youtube} target="_blank" rel="noopener">{L('Kanał na YouTube', 'YouTube channel')}</a>
+      </div>
+    </div>
+    <div class="music-head__film" data-reveal>
+      <LoopVideo name="scores-loop" eager label={L('Chórzyści śpiewają z nut', 'Singers reading from their scores')} />
+    </div>
+  </header>
+
+  <section class="albums wrap" aria-labelledby="albums-title">
+    <h2 id="albums-title" class="section-title" data-focus>{L('Płyty', 'Albums')}</h2>
+    {albums.map((a, i) => (
+      <article class:list={['album', { 'album--flip': i % 2 === 1 }]} id={a.id}>
+        <div class="album__media" data-reveal>
+          <SpotifyAlbum album={a.spotifyAlbum} cover={cover(a.id)} title={a.title} lang={lang} />
+        </div>
+        <div class="album__body">
+          <h3 class="album__title" data-focus>{a.title}</h3>
+          <p class="album__meta muted nums" data-focus style="--i:1">{[a.year, a.label, a.catalogue].filter(Boolean).join(' · ')}</p>
+          <p class="album__note" data-focus style="--i:2">{t(a.note, lang)}</p>
+          {a.id === signatureTrack.albumId && (
+            <p class="album__note album__signature" data-focus style="--i:3">
+              {L('Na okrągło: ', 'On repeat: ')}<a class="link" href={`https://open.spotify.com/track/${signatureTrack.spotifyTrack}`} target="_blank" rel="noopener">{signatureTrack.title}</a>, {signatureTrack.composer}
+            </p>
+          )}
+          <p class="album__who small muted" data-focus style="--i:3">{t(a.performers, lang)}</p>
+          <ol class="album__tracks small" data-reveal>
+            {a.tracks.map((tr) => <li><span>{tr.title}</span>{tr.composer && <span class="muted"> · {tr.composer}</span>}</li>)}
+          </ol>
+          <div class="album__actions" data-reveal>
+            {a.spotifyAlbum && <a class="link" href={`https://open.spotify.com/album/${a.spotifyAlbum}`} target="_blank" rel="noopener">{L('Otwórz w Spotify', 'Open in Spotify')}</a>}
+            {a.buy ? <a class="link" href={`${routes.shop[lang]}#${a.id}`}>{L(`Kup płytę, ${a.buy.price}`, `Buy the CD, ${a.buy.price}`)}</a> : null}
+          </div>
+        </div>
+      </article>
+    ))}
+  </section>
+
+  <section class="videos" aria-labelledby="videos-title">
+    <div class="wrap">
+      <h2 id="videos-title" class="section-title" data-focus>{L('Na żywo', 'Live')}</h2>
+      <p class="lead muted videos__lead" data-focus style="--i:1">{L('Nagrania z koncertów i konkursów. Wideo ładuje się dopiero po kliknięciu.', 'Recordings from concerts and competitions. Each video loads only when you press play.')}</p>
+      <div class="videos__feature" data-reveal>
+        <VideoFacade id={feature.id} title={feature.title} meta={`${feature.composer} · ${t(feature.era, lang)}`} lang={lang} sizes="(max-width: 860px) 100vw, 90vw" />
+      </div>
+    </div>
+    <DragRow label={L('Więcej nagrań', 'More recordings')} class="videos__row">
+      {rest.map((v) => (
+        <div data-reveal><VideoFacade id={v.id} title={v.title} meta={`${v.composer} · ${t(v.era, lang)}`} lang={lang} sizes="(max-width: 860px) 78vw, 42rem" /></div>
+      ))}
+    </DragRow>
+  </section>
+
+  <section class="films wrap" aria-labelledby="films-title">
+    <h2 id="films-title" class="section-title" data-focus>{L('Filmy', 'Films')}</h2>
+    <div class="films__grid">
+      {films.map((v, i) => (
+        <div class:list={['films__item', `films__item--${i}`]} data-reveal style={`--i:${i}`}>
+          <VideoFacade id={v.id} title={v.title} meta={t(v.era, lang)} lang={lang} sizes="(max-width: 860px) 100vw, 50vw" />
+        </div>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .music-head { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--gutter); align-items: end; }
+  .music-head__film { aspect-ratio: 4 / 5; overflow: clip; }
+  .music-head__film :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8) contrast(1.05); }
+  @media (max-width: 860px) { .music-head { grid-template-columns: 1fr; gap: 3rem; } .music-head__film { aspect-ratio: 4 / 3; } }
+  .head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; margin-top: 2rem; }
+
+  .albums { padding-block: var(--section) calc(var(--section) / 2); }
+  .album { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); margin-top: clamp(4rem, 10vw, 9rem); align-items: start; }
+  .album__media { grid-column: 1 / span 5; }
+  .album__body { grid-column: 7 / span 6; display: grid; gap: 1rem; }
+  .album--flip .album__media { grid-column: 8 / span 5; grid-row: 1; }
+  .album--flip .album__body { grid-column: 1 / span 6; grid-row: 1; }
+  .album__title { font-size: var(--step-head); line-height: 1; letter-spacing: -0.02em; }
+  .album__signature { color: var(--ink); }
+  .album__tracks { columns: 2; column-gap: var(--gutter); margin: 0.5rem 0 0; padding-left: 1.4em; }
+  .album__tracks li { break-inside: avoid; padding-block: 0.15rem; }
+  .album__actions { display: flex; flex-wrap: wrap; gap: 0.75rem 1.75rem; margin-top: 0.5rem; }
+
+  .videos { padding-block: var(--section); }
+  .videos__lead { margin-top: 1rem; }
+  .videos__feature { margin-top: 3rem; }
+  .videos__row { margin-top: clamp(2.5rem, 5vw, 4rem); }
+
+  .films { padding-bottom: var(--section); }
+  .films__grid { display: grid; grid-template-columns: 7fr 5fr; gap: var(--gutter); margin-top: 3rem; align-items: end; }
+
+  @media (max-width: 860px) {
+    .album, .album--flip { grid-template-columns: 1fr; gap: 2rem; }
+    .album__media, .album__body, .album--flip .album__media, .album--flip .album__body { grid-column: 1; grid-row: auto; }
+    .album__tracks { columns: 1; }
+    .films__grid { grid-template-columns: 1fr; gap: 3rem; }
+  }
+</style>

@@ -1,0 +1,114 @@
+---
+import { nav, routes, t, type Lang, type RouteKey } from '../i18n';
+import Logo from './Logo.astro';
+
+interface Props { lang: Lang; current: RouteKey; over?: boolean }
+const { lang, current, over = false } = Astro.props;
+const other: Lang = lang === 'pl' ? 'en' : 'pl';
+---
+
+<header class:list={['nav', { 'nav--over': over }]} data-nav>
+  <div class="nav__bar glass">
+    <a class="nav__home" href={routes.home[lang]} aria-label={lang === 'pl' ? 'Dysonans, strona główna' : 'Dysonans, home'}>
+      <Logo ink="var(--ink)" label="Dysonans" />
+    </a>
+    <nav class="nav__links" aria-label={lang === 'pl' ? 'Główna' : 'Main'}>
+      {nav.map((item) => (
+        <a href={routes[item.key][lang]} aria-current={item.key === current ? 'page' : undefined}>{t(item.label, lang)}</a>
+      ))}
+    </nav>
+    <a class="nav__lang" href={routes[current][other]} hreflang={other} lang={other}>
+      {other === 'en' ? 'English' : 'Polski'}
+    </a>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-sheet" data-nav-toggle>
+      <span class="sr-only">{lang === 'pl' ? 'Menu' : 'Menu'}</span>
+      <span class="nav__toggle-lines" aria-hidden="true"></span>
+    </button>
+  </div>
+  <div class="nav__sheet glass" id="nav-sheet" data-nav-sheet hidden>
+    {nav.map((item, i) => (
+      <a href={routes[item.key][lang]} aria-current={item.key === current ? 'page' : undefined} style={`--i:${i}`}>{t(item.label, lang)}</a>
+    ))}
+    <a class="nav__sheet-lang" href={routes[current][other]} hreflang={other} lang={other}>{other === 'en' ? 'English' : 'Polski'}</a>
+  </div>
+</header>
+
+<style>
+  .nav { position: fixed; inset: 0 0 auto 0; z-index: 50; }
+  .nav__bar {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--gutter);
+    height: 4.5rem; padding-inline: var(--margin);
+    transition: background-color var(--t-ui) ease, backdrop-filter var(--t-ui) ease;
+  }
+  .nav--over:not(.is-scrolled) .nav__bar { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .nav--over:not(.is-scrolled) .nav__home { opacity: 0; pointer-events: none; }
+  .nav__home { width: 7.5rem; display: block; color: var(--ink); transition: opacity var(--t-ui) ease; }
+  .nav__links { display: flex; justify-content: center; gap: clamp(1.25rem, 2.6vw, 2.75rem); }
+  .nav__links a, .nav__lang {
+    position: relative; text-decoration: none; font-size: var(--step-body); padding-block: 0.75rem; color: var(--ink);
+  }
+  .nav__links a::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0.45rem; height: 3px; background: var(--accent);
+    transform: scaleX(0); transform-origin: 0 50%; transition: transform var(--t-ui) var(--ease-out);
+  }
+  .nav__links a[aria-current='page']::after { transform: none; }
+  .nav__lang { color: var(--muted); transition: color var(--t-hover) ease; }
+  @media (hover: hover) and (pointer: fine) {
+    .nav__links a:hover::after { transform: scaleX(0.5); }
+    .nav__links a[aria-current='page']:hover::after { transform: none; }
+    .nav__lang:hover { color: var(--ink); }
+  }
+  .nav__toggle { display: none; width: 3rem; height: 3rem; justify-self: end; position: relative; }
+  .nav__toggle-lines, .nav__toggle-lines::before {
+    position: absolute; left: 0.75rem; right: 0.75rem; height: 2px; background: var(--ink); content: '';
+    transition: transform var(--t-ui) var(--ease-out);
+  }
+  .nav__toggle-lines { top: 1.25rem; }
+  .nav__toggle-lines::before { left: 0; right: 0; top: 0.4rem; }
+  .nav__toggle[aria-expanded='true'] .nav__toggle-lines { transform: translateY(0.2rem) rotate(45deg); }
+  .nav__toggle[aria-expanded='true'] .nav__toggle-lines::before { transform: translateY(-0.4rem) rotate(-90deg); }
+
+  .nav__sheet {
+    display: grid; gap: 0.25rem; padding: 1rem var(--margin) 2rem; min-height: calc(100svh - 4.5rem);
+    align-content: start;
+  }
+  .nav__sheet[hidden] { display: none; }
+  .nav__sheet a { font-size: var(--step-head); line-height: 1.15; text-decoration: none; padding-block: 0.35rem; }
+  .nav__sheet a[aria-current='page'] { color: var(--accent-text); }
+  .nav__sheet .nav__sheet-lang { font-size: var(--step-lead); color: var(--muted); margin-top: 1.5rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav__sheet:not([hidden]) a { animation: sheet-in 520ms var(--ease-expo) both; animation-delay: calc(var(--i, 5) * 45ms); }
+  }
+  @keyframes sheet-in { from { opacity: 0; transform: translateY(14px); } }
+
+  @media (max-width: 860px) {
+    .nav__bar { grid-template-columns: 1fr auto; }
+    .nav__links, .nav__lang { display: none; }
+    .nav__toggle { display: block; }
+    .nav--over:not(.is-scrolled):not(.is-open) .nav__home { opacity: 0; }
+    .nav.is-open .nav__home { opacity: 1; pointer-events: auto; }
+    .nav.is-open .nav__bar { background: var(--glass); -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur)); }
+  }
+</style>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const sheet = document.querySelector<HTMLElement>('[data-nav-sheet]');
+  if (nav) {
+    const onScroll = () => nav.classList.toggle('is-scrolled', scrollY > innerHeight * 0.6);
+    onScroll();
+    addEventListener('scroll', onScroll, { passive: true });
+  }
+  if (nav && toggle && sheet) {
+    const set = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      sheet.hidden = !open;
+      nav.classList.toggle('is-open', open);
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+    };
+    toggle.addEventListener('click', () => set(toggle.getAttribute('aria-expanded') !== 'true'));
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+    matchMedia('(min-width: 861px)').addEventListener('change', () => set(false));
+  }
+</script>

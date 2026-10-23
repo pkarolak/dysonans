@@ -1,0 +1,74 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { albums, contact } from '../data/site';
+import { t, type Lang } from '../i18n';
+import type { ImageMetadata } from 'astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const pl = lang === 'pl';
+const L = (p: string, e: string) => (pl ? p : e);
+
+const covers = import.meta.glob<{ default: ImageMetadata }>('../assets/covers/*.jpg', { eager: true });
+const cover = (id: string) => covers[`../assets/covers/${id}.jpg`].default;
+
+const order = (title: string, price?: string) => {
+  const subject = L(`Zamówienie płyty: ${title}`, `CD order: ${title}`);
+  const body = L(
+    `Dzień dobry,\n\nchcę zamówić płytę „${title}”${price ? ` (${price})` : ''}.\nLiczba egzemplarzy: 1\nImię i nazwisko:\nAdres do wysyłki:\nTelefon:\n\nDziękuję!`,
+    `Hello,\n\nI would like to order the CD “${title}”${price ? ` (${price})` : ''}.\nCopies: 1\nName:\nShipping address:\nPhone:\n\nThank you!`,
+  );
+  return `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+};
+---
+
+<Base
+  lang={lang}
+  page="shop"
+  title={L('Sklep', 'Shop')}
+  description={L('Płyty Chóru Kameralnego Dysonans: Salve Regina, Christmas Bells, Ã che Ángele. Kup w Music Island albo zamów mailem.', 'Dysonans Chamber Choir CDs: Salve Regina, Christmas Bells, Ã che Ángele. Buy at Music Island or order by email.')}
+>
+  <header class="page-head wrap">
+    <h1 data-focus>{L('Sklep', 'Shop')}</h1>
+    <p class="lead" data-focus style="--i:1">{L('Płyty sprzedaje Music Island. Możesz też zamówić je mailem, bezpośrednio u nas. Bez koszyka i zakładania konta.', 'Music Island sells our CDs. You can also order them from us by email. No basket, no account.')}</p>
+  </header>
+
+  <section class="shop wrap" aria-labelledby="shop-title">
+    <h2 id="shop-title" class="sr-only">{L('Płyty', 'CDs')}</h2>
+    {albums.map((a, i) => (
+      <article class:list={['item', { 'item--flip': i % 2 === 1 }]} id={a.id}>
+        <figure class="item__pic shutter" data-reveal>
+          <Image src={cover(a.id)} alt={L(`Okładka płyty ${a.title}`, `${a.title} album cover`)} widths={[500, 900, 1200]} sizes="(max-width: 860px) 90vw, 42vw" class="cover lit" />
+        </figure>
+        <div class="item__body">
+          <h3 class="item__title" data-focus>{a.title}</h3>
+          <p class="item__variant muted nums" data-focus style="--i:1">CD · {[a.year, a.label, a.catalogue].filter(Boolean).join(' · ')}</p>
+          <p data-focus style="--i:2">{t(a.note, lang)}</p>
+          <p class="item__price nums" data-focus style="--i:3">{a.buy ? a.buy.price : L('Zapytaj o dostępność', 'Ask about availability')}</p>
+          <div class="item__actions" data-focus style="--i:4">
+            {a.buy && <a class="button" href={a.buy.url} target="_blank" rel="noopener">{L('Kup w Music Island', 'Buy at Music Island')}</a>}
+            <a class:list={[a.buy ? 'link' : 'button']} href={order(a.title, a.buy?.price)}>{a.buy ? L('Zamów mailem', 'Order by email') : L('Napisz do nas', 'Write to us')}</a>
+            {a.spotifyAlbum && <a class="link" href={`https://open.spotify.com/album/${a.spotifyAlbum}`} target="_blank" rel="noopener">{L('Posłuchaj najpierw', 'Listen first')}</a>}
+          </div>
+        </div>
+      </article>
+    ))}
+  </section>
+</Base>
+
+<style>
+  .shop { padding-bottom: var(--section); }
+  .item { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); align-items: center; margin-top: clamp(3rem, 8vw, 7rem); }
+  .item__pic { grid-column: 1 / span 6; aspect-ratio: 1; overflow: clip; }
+  .item__body { grid-column: 8 / span 5; display: grid; gap: 1rem; justify-items: start; }
+  .item--flip .item__pic { grid-column: 7 / span 6; grid-row: 1; }
+  .item--flip .item__body { grid-column: 1 / span 5; grid-row: 1; }
+  .item__title { font-size: var(--step-head); line-height: 1; letter-spacing: -0.02em; }
+  .item__price { font-size: var(--step-lead); }
+  .item__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-top: 0.5rem; }
+  @media (max-width: 860px) {
+    .item, .item--flip { grid-template-columns: 1fr; gap: 2rem; }
+    .item__pic, .item__body, .item--flip .item__pic, .item--flip .item__body { grid-column: 1; grid-row: auto; }
+  }
+</style>

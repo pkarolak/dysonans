@@ -1,0 +1,46 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { Lang } from '../i18n';
+
+interface Props { album?: string; cover: ImageMetadata; title: string; lang: Lang }
+const { album, cover, title, lang } = Astro.props;
+const pl = lang === 'pl';
+---
+
+<div class="sa" data-sa={album}>
+  <Image src={cover} alt={pl ? `Okładka płyty ${title}` : `${title} album cover`} widths={[400, 700, 1000]} sizes="(max-width: 860px) 90vw, 40vw" class="sa__cover cover" />
+  {album && (
+    <button class="sa__play glass" type="button" data-sa-play>
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 1.5v13L14 8z" fill="currentColor" /></svg>
+      <span>{pl ? 'Słuchaj tutaj' : 'Listen here'}</span>
+    </button>
+  )}
+</div>
+
+<style>
+  .sa { position: relative; aspect-ratio: 1; overflow: clip; background: var(--surface); }
+  .sa__cover { transition: transform 900ms var(--ease-expo); }
+  .sa__play {
+    position: absolute; left: 1rem; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.6rem;
+    min-height: 2.75rem; padding: 0 1.1rem; color: var(--ink);
+    transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out);
+  }
+  .sa__play:active { transform: scale(0.97); }
+  @media (hover: hover) and (pointer: fine) { .sa__play:hover { background: var(--accent); } }
+  .sa iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-sa]').forEach((box) => {
+    const btn = box.querySelector<HTMLButtonElement>('[data-sa-play]');
+    btn?.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = `https://open.spotify.com/embed/album/${box.dataset.sa}?utm_source=generator&theme=0`;
+      frame.title = 'Spotify';
+      frame.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      frame.loading = 'lazy';
+      box.replaceChildren(frame);
+    }, { once: true });
+  });
+</script>
