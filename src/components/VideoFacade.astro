@@ -39,7 +39,7 @@ const pl = lang === 'pl';
     .vf__play:hover .vf__poster { transform: scale(1.03); filter: brightness(1); }
     .vf__play:hover .vf__plate { background: var(--accent); }
   }
-  .vf iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .vf__play :global(iframe) { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; border-radius: inherit; }
   .vf__cap { display: grid; gap: 0.15rem; }
   .vf__cap { padding-inline: 0.25rem; }
   .vf__title { font-size: var(--step-lead); line-height: 1.25; font-weight: 500; }
