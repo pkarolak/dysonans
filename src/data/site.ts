@@ -3,6 +3,7 @@ import type { Txt } from '../i18n';
 export const contact = {
   email: 'dysonans@dysonans.pl',
   emailOffice: 'joanna.wisniewska@cantamen.pl',
+  musicIsland: 'https://www.music-island.pl/szukaj.html?SimpleSearchText=dysonans',
   phone: '+48 608 322 797',
   phoneHref: 'tel:+48608322797',
   nip: '777-29-20-164',
