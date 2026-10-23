@@ -222,6 +222,29 @@ p + p { margin-top: 0.9em; }
   .js .shutter[data-reveal].is-in::after { transform: scaleY(0); }
   .js .shutter[data-reveal] img { transform: scale(1.1); transition: transform 1300ms var(--ease-soft); }
   .js .shutter[data-reveal].is-in img { transform: none; }
+
+  /* Surfaces rise and settle; photos inside them ease out of a slight zoom. */
+  .js .tile[data-reveal], .js .panel[data-reveal] {
+    transform: translateY(28px) scale(0.985); transform-origin: 50% 100%;
+    transition: opacity 700ms var(--ease-out), transform 1000ms var(--ease-expo), box-shadow 400ms var(--ease-out);
+    transition-delay: calc(var(--i, 0) * var(--stagger-item)), calc(var(--i, 0) * var(--stagger-item)), 0ms;
+  }
+  .js .tile[data-reveal].is-in, .js .panel[data-reveal].is-in { transform: none; }
+  .js [data-reveal] :is(.inset, .rounded:not(.shutter)) img,
+  .js [data-reveal] img.inset { transform: scale(1.06); transition: transform 1600ms var(--ease-soft); }
+  .js [data-reveal].is-in :is(.inset, .rounded:not(.shutter)) img,
+  .js [data-reveal].is-in img.inset { transform: none; }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .tile, .panel { transition: box-shadow 400ms var(--ease-out); }
+  .tile:hover { box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--line-strong); }
+  .tile .chip-icon { transition: transform 500ms var(--ease-expo); }
+  .tile:hover .chip-icon { transform: translateY(-2px) scale(1.05); }
+  :is(.panel, .tile):hover :is(.inset) img,
+  .tile:hover img.inset,
+  .rounded:hover img,
+  .vf__play:hover img { transform: scale(1.035) !important; transition: transform 1200ms var(--ease-out) 0ms !important; }
 }
 .shutter { overflow: clip; position: relative; }
 

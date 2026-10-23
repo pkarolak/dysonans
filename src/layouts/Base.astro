@@ -81,8 +81,17 @@ const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
       }
 
       const io = new IntersectionObserver(
-        (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }),
-        { rootMargin: '0px 0px 8% 0px', threshold: 0 },
+        (entries) => {
+          let n = 0;
+          entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            const el = e.target as HTMLElement;
+            if (el.hasAttribute('data-reveal') && !el.style.getPropertyValue('--i')) el.style.setProperty('--i', String(Math.min(n++, 5)));
+            el.classList.add('is-in');
+            io.unobserve(el);
+          });
+        },
+        { rootMargin: '0px 0px -6% 0px', threshold: 0 },
       );
       document.querySelectorAll('[data-reveal], [data-focus]').forEach((el) => io.observe(el));
     </script>
