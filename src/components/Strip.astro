@@ -7,7 +7,7 @@ interface Props { frames: Frame[]; label: string; class?: string }
 const { frames, label, class: cls = '' } = Astro.props;
 ---
 
-<div class:list={['strip', cls]} role="region" aria-label={label} tabindex="0" data-strip>
+<div class:list={['strip', cls]} role="region" aria-label={label} tabindex="0" data-strip data-lenis-prevent-horizontal>
   <ul class="strip__row">
     {frames.map((f, i) => (
       <li class="strip__frame" data-strip-frame>
@@ -82,11 +82,43 @@ const { frames, label, class: cls = '' } = Astro.props;
     }
     mark();
 
+    const centerOf = (f: HTMLElement) => f.offsetLeft + f.offsetWidth / 2 - strip.clientWidth / 2;
+    const current = () => {
+      const mid = strip.scrollLeft + strip.clientWidth / 2;
+      let idx = 0;
+      frames.forEach((f, i) => { if (Math.abs(f.offsetLeft + f.offsetWidth / 2 - mid) < Math.abs(frames[idx].offsetLeft + frames[idx].offsetWidth / 2 - mid)) idx = i; });
+      return idx;
+    };
+    const goTo = (idx: number) => {
+      const f = frames[Math.max(0, Math.min(frames.length - 1, idx))];
+      strip.scrollTo({ left: centerOf(f), behavior: 'smooth' });
+    };
+
+    strip.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      goTo(current() + (e.key === 'ArrowRight' ? 1 : -1));
+    });
+
+    let acc = 0, wheelLock = 0, quiet = 0;
+    strip.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      clearTimeout(quiet);
+      quiet = window.setTimeout(() => { wheelLock = 0; acc = 0; }, 180);
+      if (wheelLock) return;
+      acc += e.deltaX;
+      if (Math.abs(acc) > 24) { wheelLock = 1; goTo(current() + Math.sign(acc)); acc = 0; }
+    }, { passive: false });
+
+    strip.querySelectorAll('img').forEach((img) => { img.draggable = false; });
+
     if (matchMedia('(pointer: fine)').matches) {
-      let x0 = 0, s0 = 0, down = false, moved = false;
+      let x0 = 0, s0 = 0, t0 = 0, start = 0, down = false, moved = false;
       strip.addEventListener('pointerdown', (e) => {
-        if (e.pointerType !== 'mouse') return;
-        down = true; moved = false; x0 = e.clientX; s0 = strip.scrollLeft;
+        if (e.pointerType !== 'mouse' || e.button !== 0) return;
+        e.preventDefault();
+        down = true; moved = false; x0 = e.clientX; s0 = strip.scrollLeft; t0 = performance.now(); start = current();
       });
       addEventListener('pointermove', (e) => {
         if (!down) return;
@@ -94,15 +126,16 @@ const { frames, label, class: cls = '' } = Astro.props;
         if (Math.abs(dx) > 4) { moved = true; strip.classList.add('is-dragging'); }
         strip.scrollLeft = s0 - dx;
       });
-      addEventListener('pointerup', () => {
+      addEventListener('pointerup', (e) => {
         if (!down) return;
         down = false;
-        if (moved) {
-          strip.classList.remove('is-dragging');
-          const mid = strip.scrollLeft + strip.clientWidth / 2;
-          const target = frames.reduce((a, f) => Math.abs(f.offsetLeft + f.offsetWidth / 2 - mid) < Math.abs(a.offsetLeft + a.offsetWidth / 2 - mid) ? f : a);
-          strip.scrollTo({ left: target.offsetLeft + target.offsetWidth / 2 - strip.clientWidth / 2, behavior: 'smooth' });
-        }
+        if (!moved) return;
+        strip.classList.remove('is-dragging');
+        const dx = e.clientX - x0;
+        const speed = Math.abs(dx) / Math.max(1, performance.now() - t0);
+        const width = frames[start].offsetWidth || 1;
+        const steps = Math.max(1, Math.round(Math.abs(dx) / width + (speed > 0.8 ? 0.5 : 0)));
+        goTo(Math.abs(dx) < 40 ? start : start - Math.sign(dx) * steps);
       });
       strip.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); } }, true);
     }
