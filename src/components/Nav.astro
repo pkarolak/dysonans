@@ -47,18 +47,20 @@ const pl = lang === 'pl';
 <style>
   .nav { position: fixed; top: 14px; left: 0; right: 0; z-index: 50; padding-inline: max(12px, var(--margin)); pointer-events: none; view-transition-name: site-nav; }
   .nav__pill {
-    pointer-events: auto; margin-inline: auto; max-width: 62rem; height: 3.75rem;
-    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem;
-    padding: 0 0.5rem 0 1.4rem; border-radius: var(--r-pill);
+    pointer-events: auto; margin-inline: auto; max-width: 68rem; height: 3.75rem;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 1rem;
+    padding: 0 0.5rem; border-radius: var(--r-pill);
     transition: background-color var(--t-ui) ease, box-shadow var(--t-ui) ease, max-width 500ms var(--ease-expo);
   }
   .nav--over:not(.is-scrolled) .nav__pill { --ink: #F5F5F4; --glass: rgb(14 14 16 / 0.38); --glass-line: rgb(255 255 255 / 0.12); color: var(--ink); }
-  .nav__home { width: 6.25rem; display: block; color: var(--ink); }
+  .nav__home { grid-column: 2; grid-row: 1; width: 6.25rem; display: block; color: var(--ink); }
+  .nav__links { grid-column: 1; grid-row: 1; }
+  .nav__tools { grid-column: 3; grid-row: 1; justify-self: end; }
   .nav--over:not(.is-scrolled) .nav__home { opacity: 0; pointer-events: none; }
   .nav__home { transition: opacity var(--t-ui) ease; }
-  .nav__links { display: flex; justify-content: center; gap: 0.25rem; }
+  .nav__links { display: flex; justify-content: flex-start; gap: 0.15rem; }
   .nav__links a {
-    text-decoration: none; font-size: 1rem; font-weight: 500; padding: 0.5rem 0.95rem; border-radius: var(--r-pill);
+    text-decoration: none; font-size: 1rem; font-weight: 500; padding: 0.5rem 0.9rem; white-space: nowrap; border-radius: var(--r-pill);
     color: var(--ink); transition: background-color var(--t-hover) ease, color var(--t-hover) ease;
   }
   .nav__links a[aria-current='page'] { background: var(--ink); color: var(--bg); }
@@ -106,8 +108,10 @@ const pl = lang === 'pl';
   }
   @keyframes sheet-in { from { opacity: 0; transform: translateY(-8px) scale(0.98); } }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1100px) {
     .nav__pill { grid-template-columns: 1fr auto; padding-left: 1.2rem; height: 3.5rem; }
+    .nav__home { grid-column: 1; }
+    .nav__tools { grid-column: 2; }
     .nav__links { display: none; }
     .nav__toggle { display: inline-grid; }
     .nav.is-open .nav__home { opacity: 1; pointer-events: auto; }
@@ -133,7 +137,7 @@ const pl = lang === 'pl';
     };
     toggle.addEventListener('click', () => set(toggle.getAttribute('aria-expanded') !== 'true'));
     addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
-    matchMedia('(min-width: 901px)').addEventListener('change', () => set(false));
+    matchMedia('(min-width: 1101px)').addEventListener('change', () => set(false));
   }
   document.querySelectorAll<HTMLButtonElement>('[data-mode-toggle]').forEach((btn) => {
     btn.addEventListener('click', () => {
