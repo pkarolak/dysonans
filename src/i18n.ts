@@ -15,6 +15,7 @@ export const routes = {
 export type RouteKey = keyof typeof routes;
 
 export const nav: { key: RouteKey; label: Txt }[] = [
+  { key: 'home', label: { pl: 'Start', en: 'Home' } },
   { key: 'music', label: { pl: 'Muzyka', en: 'Music' } },
   { key: 'awards', label: { pl: 'Nagrody', en: 'Awards' } },
   { key: 'festival', label: { pl: 'Festiwal', en: 'Festival' } },
