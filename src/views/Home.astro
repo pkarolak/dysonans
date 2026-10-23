@@ -21,6 +21,7 @@ import stained from '../assets/photos/hall-stained-glass.jpg';
 import curtains from '../assets/photos/stage-red-curtains.jpg';
 import wooden from '../assets/photos/wooden-church.jpg';
 import white from '../assets/photos/white-church.jpg';
+import choir from '../assets/photos/choir-steps.jpg';
 import bells from '../assets/video-posters/1D5B-JYkZKg.jpg';
 import bolivia from '../assets/video-posters/ujEyS3X6KIM.jpg';
 import carnival from '../assets/video-posters/rSwlNdnzYEo.jpg';
@@ -249,9 +250,9 @@ const invite = `mailto:${contact.email}?subject=${encodeURIComponent(L('Zaprosze
 
   <section class="join wrap" aria-labelledby="join-title">
     <div class="join__panel panel">
-      <svg class="join__fork" viewBox="166 -10 121 250" role="img" aria-label={L('Kamerton z logo Dysonansu', 'The tuning fork from the Dysonans logo')} data-reveal>
-        <path d="M186.5 -10L186.5 99.5A40 40 0 0 0 266.5 99.5L266.5 -10M226.5 130.5L226.5 240" fill="none" stroke="var(--brand-red)" stroke-width="21" />
-      </svg>
+      <figure class="join__pic inset" data-reveal>
+        <Image src={choir} alt={L('Cały chór na schodach przed kolumnadą', 'The whole choir on the steps in front of a colonnade')} widths={[600, 1024]} sizes="(max-width: 860px) 90vw, 46vw" class="cover" />
+      </figure>
       <div class="join__text">
         <h2 id="join-title" class="section-title" data-focus>{L('Zaśpiewaj z nami', 'Sing with us')}</h2>
         <p class="lead" data-focus style="--i:1">{L('Śpiewają u nas studenci i absolwenci poznańskich uczelni. Jeśli czytasz nuty i lubisz napięcie, które się rozwiązuje, napisz.', 'Our singers are students and graduates of Poznań universities. If you read music and like tension that resolves, write to us.')}</p>
@@ -395,17 +396,12 @@ const invite = `mailto:${contact.email}?subject=${encodeURIComponent(L('Zaprosze
 
   /* Join */
   .join { padding-block: calc(var(--section) / 2) var(--section); }
-  .join__panel { --p: clamp(1.75rem, 5vw, 4.5rem); padding: var(--p); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; overflow: clip; min-height: 34rem; }
-  .join__fork { height: clamp(18rem, 40vw, 34rem); width: auto; justify-self: center; margin-bottom: calc(-1 * var(--p) - 4rem); align-self: end; }
-  .join__text { display: grid; gap: 1.25rem; justify-items: start; }
+  .join__panel { --p: clamp(1rem, 2vw, 1.5rem); padding: var(--p); display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; overflow: clip; }
+  .join__pic { margin: 0; overflow: clip; aspect-ratio: 3 / 2; }
+  .join__text { display: grid; gap: 1.25rem; justify-items: start; padding: clamp(0.5rem, 2vw, 2rem) clamp(0.5rem, 2vw, 2rem) clamp(0.5rem, 2vw, 2rem) 0; }
   .join__facts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  @media (prefers-reduced-motion: no-preference) {
-    :global(.js) .join__fork[data-reveal] { opacity: 1; transform: translateY(14%); transition: transform 1600ms var(--ease-expo); }
-    :global(.js) .join__fork[data-reveal].is-in { transform: none; }
-  }
   @media (max-width: 860px) {
     .join__panel { grid-template-columns: 1fr; }
-    .join__text { order: -1; }
-    .join__fork { height: 16rem; }
+    .join__text { padding: 0.5rem 0.5rem 1rem; }
   }
 </style>
