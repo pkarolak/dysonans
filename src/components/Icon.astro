@@ -1,0 +1,22 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+type Weight = 'regular' | 'light' | 'bold' | 'duotone' | 'fill';
+interface Props { name: string; weight?: Weight; size?: number; class?: string; label?: string }
+const { name, weight = 'regular', size = 20, class: cls = '', label } = Astro.props;
+
+const fork = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18"><path d="M78 16v76a50 50 0 0 0 100 0V16M128 152v88"/></svg>';
+
+let svg: string;
+if (name === 'fork') svg = fork;
+else {
+  const root = join(process.cwd(), 'node_modules', '@phosphor-icons', 'core');
+  const file = weight === 'regular' ? `${name}.svg` : `${name}-${weight}.svg`;
+  svg = readFileSync(join(root, 'assets', weight, file), 'utf8');
+}
+const attrs = `width="${size}" height="${size}" class="icon ${cls}" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true" focusable="false"'}`;
+const html = svg.replace('<svg ', `<svg ${attrs} `);
+---
+
+<Fragment set:html={html} />

@@ -32,15 +32,16 @@ const { frames, label, class: cls = '' } = Astro.props;
   .strip.is-dragging * { pointer-events: none; }
   .strip__row { display: flex; gap: 10px; width: max-content; padding-inline: var(--margin); }
   .strip__frame { scroll-snap-align: center; flex: none; }
-  .strip__pic { height: var(--strip-h, 34vh); min-height: 220px; overflow: clip; }
+  .strip__row { gap: 14px; }
+  .strip__pic { height: var(--strip-h, 46vh); min-height: 260px; overflow: clip; border-radius: var(--r-tile); box-shadow: var(--shadow); }
   .strip__img {
     height: 100%; width: auto; max-width: none; object-fit: cover;
-    filter: brightness(0.55) contrast(1.05);
+    filter: brightness(0.6) saturate(0.85);
     transition: filter 600ms var(--ease-out), transform 900ms var(--ease-expo);
   }
-  .strip__frame.is-center .strip__img { filter: brightness(0.95) contrast(1.05); }
+  .strip__frame.is-center .strip__img { filter: none; }
   .strip__cap {
-    margin-top: 0.75rem; font-size: var(--step-small); color: var(--muted);
+    margin-top: 0.9rem; font-size: var(--step-small); font-weight: 500; color: var(--muted);
     opacity: 0; transform: translateY(6px); transition: opacity 400ms ease, transform 500ms var(--ease-out);
   }
   .strip__frame.is-center .strip__cap { opacity: 1; transform: none; color: var(--ink); }

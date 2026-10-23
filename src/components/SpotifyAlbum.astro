@@ -19,11 +19,12 @@ const pl = lang === 'pl';
 </div>
 
 <style>
-  .sa { position: relative; aspect-ratio: 1; overflow: clip; background: var(--surface); }
+  .sa { position: relative; aspect-ratio: 1; overflow: clip; background: var(--surface-2); border-radius: inherit; isolation: isolate; }
   .sa__cover { transition: transform 900ms var(--ease-expo); }
   .sa__play {
-    position: absolute; left: 1rem; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.6rem;
-    min-height: 2.75rem; padding: 0 1.1rem; color: var(--ink);
+    --ink: #F5F5F4; --glass: rgb(14 14 16 / 0.5); --glass-line: rgb(255 255 255 / 0.14);
+    position: absolute; left: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 0.55rem;
+    min-height: 2.5rem; padding: 0 1rem; color: var(--ink); border-radius: var(--r-pill); font-weight: 500; font-size: var(--step-small);
     transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out);
   }
   .sa__play:active { transform: scale(0.97); }

@@ -22,7 +22,7 @@ const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
 ---
 
 <!doctype html>
-<html lang={lang} data-theme={theme}>
+<html lang={lang} data-theme={theme} data-mode="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,7 +33,8 @@ const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
     <link rel="alternate" hreflang="en" href={alt('en')} />
     <link rel="alternate" hreflang="x-default" href={alt('pl')} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#171A1B" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F6F5F2" media="(prefers-color-scheme: light)" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -41,7 +42,16 @@ const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
     <meta property="og:image" content={new URL('/og.jpg', site).href} />
     <meta property="og:locale" content={lang === 'pl' ? 'pl_PL' : 'en_GB'} />
     <link rel="preload" href="/fonts/boska-400.woff2" as="font" type="font/woff2" crossorigin />
-    <script is:inline>document.documentElement.classList.add('js');</script>
+    <link rel="preload" href="/fonts/satoshi-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/satoshi-500.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement, m;
+        d.classList.add('js');
+        try { m = localStorage.getItem('mode'); } catch (e) {}
+        d.dataset.mode = m || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      })();
+    </script>
   </head>
   <body>
     <a class="skip" href="#main">{lang === 'pl' ? 'Przejdź do treści' : 'Skip to content'}</a>
@@ -53,8 +63,8 @@ const fullTitle = page === 'home' ? title : `${title} · Dysonans`;
     <Footer lang={lang} onRepeat={onRepeat} />
 
     <style>
-      .main { position: relative; z-index: 1; background: var(--bg); isolation: isolate; overflow: clip; }
-      .skip { position: fixed; top: 0.75rem; left: 0.75rem; z-index: 100; padding: 0.75rem 1rem; background: var(--ink); color: var(--paper-ink); transform: translateY(-200%); }
+      .main { position: relative; z-index: 1; isolation: isolate; overflow: clip; }
+      .skip { position: fixed; top: 0.75rem; left: 0.75rem; z-index: 100; padding: 0.75rem 1rem; border-radius: 999px; background: var(--ink); color: var(--bg); transform: translateY(-200%); }
       .skip:focus { transform: none; }
     </style>
 

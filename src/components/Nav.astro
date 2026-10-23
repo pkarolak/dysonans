@@ -1,93 +1,117 @@
 ---
 import { nav, routes, t, type Lang, type RouteKey } from '../i18n';
 import Logo from './Logo.astro';
+import Icon from './Icon.astro';
 
 interface Props { lang: Lang; current: RouteKey; over?: boolean }
 const { lang, current, over = false } = Astro.props;
 const other: Lang = lang === 'pl' ? 'en' : 'pl';
+const pl = lang === 'pl';
 ---
 
 <header class:list={['nav', { 'nav--over': over }]} data-nav>
-  <div class="nav__bar glass">
-    <a class="nav__home" href={routes.home[lang]} aria-label={lang === 'pl' ? 'Dysonans, strona główna' : 'Dysonans, home'}>
-      <Logo ink="var(--ink)" label="Dysonans" />
+  <div class="nav__pill glass">
+    <a class="nav__home" href={routes.home[lang]} aria-label={pl ? 'Dysonans, strona główna' : 'Dysonans, home'}>
+      <Logo label="Dysonans" />
     </a>
-    <nav class="nav__links" aria-label={lang === 'pl' ? 'Główna' : 'Main'}>
+    <nav class="nav__links" aria-label={pl ? 'Główna' : 'Main'}>
       {nav.map((item) => (
         <a href={routes[item.key][lang]} aria-current={item.key === current ? 'page' : undefined}>{t(item.label, lang)}</a>
       ))}
     </nav>
-    <a class="nav__lang" href={routes[current][other]} hreflang={other} lang={other}>
-      {other === 'en' ? 'English' : 'Polski'}
-    </a>
-    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-sheet" data-nav-toggle>
-      <span class="sr-only">{lang === 'pl' ? 'Menu' : 'Menu'}</span>
-      <span class="nav__toggle-lines" aria-hidden="true"></span>
-    </button>
+    <div class="nav__tools">
+      <button class="icon-button nav__mode" type="button" data-mode-toggle aria-label={pl ? 'Przełącz tryb jasny i ciemny' : 'Switch light and dark mode'}>
+        <span class="nav__sun"><Icon name="sun" size={19} /></span>
+        <span class="nav__moon"><Icon name="moon" size={18} /></span>
+      </button>
+      <a class="nav__lang" href={routes[current][other]} hreflang={other} lang={other} aria-label={other === 'en' ? 'English version' : 'Wersja polska'}>
+        <Icon name="globe-simple" size={17} />
+        <span>{other.toUpperCase()}</span>
+      </a>
+      <button class="icon-button nav__toggle" type="button" aria-expanded="false" aria-controls="nav-sheet" data-nav-toggle>
+        <span class="sr-only">Menu</span>
+        <span class="nav__toggle-lines" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
   <div class="nav__sheet glass" id="nav-sheet" data-nav-sheet hidden>
     {nav.map((item, i) => (
-      <a href={routes[item.key][lang]} aria-current={item.key === current ? 'page' : undefined} style={`--i:${i}`}>{t(item.label, lang)}</a>
+      <a href={routes[item.key][lang]} aria-current={item.key === current ? 'page' : undefined} style={`--i:${i}`}>
+        <span>{t(item.label, lang)}</span>
+        <Icon name="arrow-right" size={20} />
+      </a>
     ))}
-    <a class="nav__sheet-lang" href={routes[current][other]} hreflang={other} lang={other}>{other === 'en' ? 'English' : 'Polski'}</a>
   </div>
 </header>
 
 <style>
-  .nav { position: fixed; inset: 0 0 auto 0; z-index: 50; }
-  .nav__bar {
-    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--gutter);
-    height: 4.5rem; padding-inline: var(--margin);
-    transition: background-color var(--t-ui) ease, backdrop-filter var(--t-ui) ease;
+  .nav { position: fixed; top: 14px; left: 0; right: 0; z-index: 50; padding-inline: max(12px, var(--margin)); pointer-events: none; view-transition-name: site-nav; }
+  .nav__pill {
+    pointer-events: auto; margin-inline: auto; max-width: 62rem; height: 3.75rem;
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem;
+    padding: 0 0.5rem 0 1.4rem; border-radius: var(--r-pill);
+    transition: background-color var(--t-ui) ease, box-shadow var(--t-ui) ease, max-width 500ms var(--ease-expo);
   }
-  .nav--over:not(.is-scrolled) .nav__bar { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .nav--over:not(.is-scrolled) .nav__pill { --ink: #F5F5F4; --glass: rgb(14 14 16 / 0.38); --glass-line: rgb(255 255 255 / 0.12); color: var(--ink); }
+  .nav__home { width: 6.25rem; display: block; color: var(--ink); }
   .nav--over:not(.is-scrolled) .nav__home { opacity: 0; pointer-events: none; }
-  .nav__home { width: 7.5rem; display: block; color: var(--ink); transition: opacity var(--t-ui) ease; }
-  .nav__links { display: flex; justify-content: center; gap: clamp(1.25rem, 2.6vw, 2.75rem); }
-  .nav__links a, .nav__lang {
-    position: relative; text-decoration: none; font-size: var(--step-body); padding-block: 0.75rem; color: var(--ink);
+  .nav__home { transition: opacity var(--t-ui) ease; }
+  .nav__links { display: flex; justify-content: center; gap: 0.25rem; }
+  .nav__links a {
+    text-decoration: none; font-size: 1rem; font-weight: 500; padding: 0.5rem 0.95rem; border-radius: var(--r-pill);
+    color: var(--ink); transition: background-color var(--t-hover) ease, color var(--t-hover) ease;
   }
-  .nav__links a::after {
-    content: ''; position: absolute; left: 0; right: 0; bottom: 0.45rem; height: 3px; background: var(--accent);
-    transform: scaleX(0); transform-origin: 0 50%; transition: transform var(--t-ui) var(--ease-out);
+  .nav__links a[aria-current='page'] { background: var(--ink); color: var(--bg); }
+  .nav--over:not(.is-scrolled) .nav__links a[aria-current='page'] { color: #000; }
+  .nav__tools { display: flex; align-items: center; gap: 0.15rem; }
+  .nav__lang {
+    display: inline-flex; align-items: center; gap: 0.35rem; height: 2.5rem; padding: 0 0.85rem; border-radius: var(--r-pill);
+    text-decoration: none; font-size: 0.9375rem; font-weight: 500; color: var(--ink);
+    transition: background-color var(--t-hover) ease;
   }
-  .nav__links a[aria-current='page']::after { transform: none; }
-  .nav__lang { color: var(--muted); transition: color var(--t-hover) ease; }
+  .nav__mode .nav__moon { display: none; }
+  :global([data-mode='light']) .nav__mode .nav__sun { display: none; }
+  :global([data-mode='light']) .nav__mode .nav__moon { display: block; }
+  .nav__mode > span { display: grid; place-items: center; }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav__mode:active > span { transition: transform 300ms var(--ease-out); transform: rotate(-30deg); }
+  }
   @media (hover: hover) and (pointer: fine) {
-    .nav__links a:hover::after { transform: scaleX(0.5); }
-    .nav__links a[aria-current='page']:hover::after { transform: none; }
-    .nav__lang:hover { color: var(--ink); }
+    .nav__links a:not([aria-current='page']):hover, .nav__lang:hover { background: color-mix(in oklab, var(--ink) 10%, transparent); }
   }
-  .nav__toggle { display: none; width: 3rem; height: 3rem; justify-self: end; position: relative; }
+
+  .nav__toggle { display: none; position: relative; }
   .nav__toggle-lines, .nav__toggle-lines::before {
-    position: absolute; left: 0.75rem; right: 0.75rem; height: 2px; background: var(--ink); content: '';
+    position: absolute; left: 0.8rem; right: 0.8rem; height: 1.5px; background: var(--ink); content: ''; border-radius: 2px;
     transition: transform var(--t-ui) var(--ease-out);
   }
-  .nav__toggle-lines { top: 1.25rem; }
-  .nav__toggle-lines::before { left: 0; right: 0; top: 0.4rem; }
-  .nav__toggle[aria-expanded='true'] .nav__toggle-lines { transform: translateY(0.2rem) rotate(45deg); }
-  .nav__toggle[aria-expanded='true'] .nav__toggle-lines::before { transform: translateY(-0.4rem) rotate(-90deg); }
+  .nav__toggle-lines { top: 1rem; }
+  .nav__toggle-lines::before { left: 0; right: 0; top: 0.45rem; }
+  .nav__toggle[aria-expanded='true'] .nav__toggle-lines { transform: translateY(0.225rem) rotate(45deg); }
+  .nav__toggle[aria-expanded='true'] .nav__toggle-lines::before { transform: translateY(-0.45rem) rotate(-90deg); }
 
   .nav__sheet {
-    display: grid; gap: 0.25rem; padding: 1rem var(--margin) 2rem; min-height: calc(100svh - 4.5rem);
-    align-content: start;
+    pointer-events: auto; margin: 10px auto 0; max-width: 62rem; border-radius: 28px; padding: 10px;
+    display: grid; gap: 4px;
   }
   .nav__sheet[hidden] { display: none; }
-  .nav__sheet a { font-size: var(--step-head); line-height: 1.15; text-decoration: none; padding-block: 0.35rem; }
-  .nav__sheet a[aria-current='page'] { color: var(--accent-text); }
-  .nav__sheet .nav__sheet-lang { font-size: var(--step-lead); color: var(--muted); margin-top: 1.5rem; }
-  @media (prefers-reduced-motion: no-preference) {
-    .nav__sheet:not([hidden]) a { animation: sheet-in 520ms var(--ease-expo) both; animation-delay: calc(var(--i, 5) * 45ms); }
+  .nav__sheet a {
+    display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.1rem; border-radius: 18px;
+    font-family: var(--font-display); font-size: 2rem; line-height: 1.1; text-decoration: none; color: var(--ink);
   }
-  @keyframes sheet-in { from { opacity: 0; transform: translateY(14px); } }
+  .nav__sheet a[aria-current='page'] { background: var(--ink); color: var(--bg); }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav__sheet:not([hidden]) { animation: sheet-in 420ms var(--ease-expo) both; }
+    .nav__sheet:not([hidden]) a { animation: sheet-in 520ms var(--ease-expo) both; animation-delay: calc(var(--i, 0) * 40ms + 60ms); }
+  }
+  @keyframes sheet-in { from { opacity: 0; transform: translateY(-8px) scale(0.98); } }
 
-  @media (max-width: 860px) {
-    .nav__bar { grid-template-columns: 1fr auto; }
-    .nav__links, .nav__lang { display: none; }
-    .nav__toggle { display: block; }
-    .nav--over:not(.is-scrolled):not(.is-open) .nav__home { opacity: 0; }
+  @media (max-width: 900px) {
+    .nav__pill { grid-template-columns: 1fr auto; padding-left: 1.2rem; height: 3.5rem; }
+    .nav__links { display: none; }
+    .nav__toggle { display: inline-grid; }
     .nav.is-open .nav__home { opacity: 1; pointer-events: auto; }
-    .nav.is-open .nav__bar { background: var(--glass); -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur)); }
+    .nav.is-open .nav__pill { --ink: var(--ink); }
   }
 </style>
 
@@ -96,7 +120,7 @@ const other: Lang = lang === 'pl' ? 'en' : 'pl';
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
   const sheet = document.querySelector<HTMLElement>('[data-nav-sheet]');
   if (nav) {
-    const onScroll = () => nav.classList.toggle('is-scrolled', scrollY > innerHeight * 0.6);
+    const onScroll = () => nav.classList.toggle('is-scrolled', scrollY > innerHeight * 0.7);
     onScroll();
     addEventListener('scroll', onScroll, { passive: true });
   }
@@ -105,10 +129,23 @@ const other: Lang = lang === 'pl' ? 'en' : 'pl';
       toggle.setAttribute('aria-expanded', String(open));
       sheet.hidden = !open;
       nav.classList.toggle('is-open', open);
-      document.documentElement.style.overflow = open ? 'hidden' : '';
+      nav.classList.toggle('is-scrolled', open || scrollY > innerHeight * 0.7);
     };
     toggle.addEventListener('click', () => set(toggle.getAttribute('aria-expanded') !== 'true'));
     addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
-    matchMedia('(min-width: 861px)').addEventListener('change', () => set(false));
+    matchMedia('(min-width: 901px)').addEventListener('change', () => set(false));
   }
+  document.querySelectorAll<HTMLButtonElement>('[data-mode-toggle]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.dataset.mode === 'light' ? 'dark' : 'light';
+      const apply = () => {
+        document.documentElement.dataset.mode = next;
+        try { localStorage.setItem('mode', next); } catch {}
+        dispatchEvent(new CustomEvent('dysonans:mode', { detail: next }));
+      };
+      const doc = document as any;
+      if (doc.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) doc.startViewTransition(apply);
+      else apply();
+    });
+  });
 </script>

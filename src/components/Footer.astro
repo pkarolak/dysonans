@@ -3,73 +3,75 @@ import { contact } from '../data/site';
 import { nav, routes, t, type Lang } from '../i18n';
 import Logo from './Logo.astro';
 import OnRepeat from './OnRepeat.astro';
+import Icon from './Icon.astro';
 
 interface Props { lang: Lang; onRepeat?: boolean }
 const { lang, onRepeat = false } = Astro.props;
 const pl = lang === 'pl';
 ---
 
-<footer class="footer">
-  <div class="footer__inner wrap">
-    <div class="footer__cols">
+<footer class="footer wrap">
+  <div class="footer__panel panel">
+    <div class="footer__top">
       {onRepeat ? (
         <div class="footer__repeat"><OnRepeat lang={lang} /></div>
       ) : (
         <div class="footer__about">
-          <h2 class="footer__h">{pl ? 'Chór Kameralny Dysonans' : 'Dysonans Chamber Choir'}</h2>
-          <p>{pl ? 'Poznań, od 1991 roku. Studenci i absolwenci poznańskich uczelni.' : 'Poznań, since 1991. Students and graduates of Poznań universities.'}</p>
+          <h2 class="footer__name">{pl ? 'Chór Kameralny Dysonans' : 'Dysonans Chamber Choir'}</h2>
+          <p class="muted">{pl ? 'Poznań, od 1991 roku. Studenci i absolwenci poznańskich uczelni.' : 'Poznań, since 1991. Students and graduates of Poznań universities.'}</p>
         </div>
       )}
       <nav class="footer__col" aria-label={pl ? 'Strony' : 'Pages'}>
         <h2 class="footer__h">{pl ? 'Strony' : 'Pages'}</h2>
         <ul class="footer__list">
-          <li><a class="link" href={routes.home[lang]}>Dysonans</a></li>
-          {nav.map((n) => <li><a class="link" href={routes[n.key][lang]}>{t(n.label, lang)}</a></li>)}
+          <li><a href={routes.home[lang]}>Dysonans</a></li>
+          {nav.map((n) => <li><a href={routes[n.key][lang]}>{t(n.label, lang)}</a></li>)}
         </ul>
       </nav>
       <div class="footer__col">
         <h2 class="footer__h">{pl ? 'Słuchaj' : 'Listen'}</h2>
         <ul class="footer__list">
-          <li><a class="link" href={contact.spotify} target="_blank" rel="noopener">Spotify</a></li>
-          <li><a class="link" href={contact.youtube} target="_blank" rel="noopener">YouTube</a></li>
-          <li><a class="link" href="https://www.music-island.pl/" target="_blank" rel="noopener">Music Island</a></li>
+          <li><a href={contact.spotify} target="_blank" rel="noopener"><Icon name="spotify-logo" size={18} />Spotify</a></li>
+          <li><a href={contact.youtube} target="_blank" rel="noopener"><Icon name="youtube-logo" size={18} />YouTube</a></li>
+          <li><a href="https://www.music-island.pl/" target="_blank" rel="noopener"><Icon name="vinyl-record" size={18} />Music Island</a></li>
         </ul>
       </div>
       <div class="footer__col">
         <h2 class="footer__h">{pl ? 'Kontakt' : 'Contact'}</h2>
         <ul class="footer__list">
-          <li><a class="link" href={`mailto:${contact.email}`}>{contact.email}</a></li>
-          <li><a class="link nums" href={contact.phoneHref}>{contact.phone}</a></li>
+          <li><a href={`mailto:${contact.email}`}><Icon name="envelope-simple" size={18} />{contact.email}</a></li>
+          <li><a class="nums" href={contact.phoneHref}><Icon name="phone" size={18} />{contact.phone}</a></li>
           <li class="footer__fine">{t(contact.association, lang)}</li>
         </ul>
       </div>
     </div>
-    <div class="footer__mark">
-      <Logo ink="var(--paper-ink)" label="Dysonans" />
+    <div class="footer__mark inset">
+      <Logo label="Dysonans" />
     </div>
-    <p class="footer__legal small">© {new Date().getFullYear()} {pl ? 'Chór Kameralny Dysonans' : 'Dysonans Chamber Choir'}</p>
+    <p class="footer__legal">© {new Date().getFullYear()} {pl ? 'Chór Kameralny Dysonans · Poznań' : 'Dysonans Chamber Choir · Poznań'}</p>
   </div>
 </footer>
 
 <style>
-  .footer { background: var(--paper); color: var(--paper-ink); }
-  .footer__inner { padding-top: clamp(3.5rem, 8vw, 6rem); padding-bottom: var(--margin); }
-  .footer__cols {
-    display: grid; grid-template-columns: minmax(0, 5fr) repeat(3, minmax(0, 2fr)); gap: var(--gutter) clamp(1.5rem, 3vw, 3rem);
-  }
-  .footer__h { font-size: var(--step-small); color: #555B5C; margin-bottom: 0.9rem; }
-  .footer__about .footer__h { font-size: var(--step-lead); color: var(--paper-ink); margin-bottom: 0.6rem; }
-  .footer__list { display: grid; gap: 0.45rem; }
-  .footer__fine { font-size: var(--step-small); color: #555B5C; }
-  .footer__repeat { max-width: 34rem; }
-  .footer__mark { margin-top: clamp(3.5rem, 9vw, 7rem); }
-  .footer__legal { margin-top: 1.5rem; color: #555B5C; }
+  .footer { padding-bottom: var(--margin); position: relative; z-index: 1; }
+  .footer__panel { padding: clamp(1.5rem, 3vw, 2.5rem); --p: clamp(1.5rem, 3vw, 2.5rem); }
+  .footer__top { display: grid; grid-template-columns: minmax(0, 5fr) repeat(3, minmax(0, 2.2fr)); gap: 2.5rem clamp(1.5rem, 3vw, 3rem); }
+  .footer__name { font-family: var(--font-display); font-size: var(--step-title); line-height: 1.1; margin-bottom: 0.6rem; }
+  .footer__h { font-size: var(--step-small); font-weight: 500; color: var(--muted); margin-bottom: 1rem; }
+  .footer__list { display: grid; gap: 0.6rem; }
+  .footer__list a { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--ink); transition: color var(--t-hover) ease; }
+  .footer__list a :global(svg) { color: var(--muted); }
+  @media (hover: hover) and (pointer: fine) { .footer__list a:hover { color: var(--accent-text); } }
+  .footer__fine { font-size: var(--step-small); color: var(--muted); }
+  .footer__repeat { max-width: 36rem; }
+  .footer__mark { margin-top: clamp(3rem, 7vw, 6rem); color: var(--ink); }
+  .footer__legal { margin-top: 1.25rem; font-size: var(--step-small); color: var(--muted); }
   @media (max-width: 1100px) {
-    .footer__cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .footer__repeat, .footer__about { grid-column: 1 / -1; margin-bottom: 1.5rem; }
+    .footer__top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .footer__repeat, .footer__about { grid-column: 1 / -1; }
   }
-  @media (max-width: 560px) {
-    .footer__cols { grid-template-columns: 1fr 1fr; row-gap: 2rem; }
+  @media (max-width: 600px) {
+    .footer__top { grid-template-columns: 1fr 1fr; }
     .footer__col:last-child { grid-column: 1 / -1; }
   }
 </style>

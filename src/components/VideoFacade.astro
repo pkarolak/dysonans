@@ -25,12 +25,13 @@ const pl = lang === 'pl';
 </figure>
 
 <style>
-  .vf { display: grid; gap: 0.85rem; }
-  .vf__play { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; overflow: clip; background: var(--surface); }
+  .vf { display: grid; gap: 1rem; }
+  .vf__play { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; overflow: clip; background: var(--surface-2); border-radius: var(--r-tile); box-shadow: var(--shadow); isolation: isolate; }
   .vf__poster { transition: transform 900ms var(--ease-expo), filter 400ms ease; }
   .vf__plate {
-    position: absolute; left: 1rem; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.6rem;
-    min-height: 2.75rem; padding: 0 1.1rem; color: var(--ink);
+    --ink: #F5F5F4; --glass: rgb(14 14 16 / 0.5); --glass-line: rgb(255 255 255 / 0.14);
+    position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 0.6rem;
+    min-height: 2.75rem; padding: 0 1.15rem; color: var(--ink); border-radius: var(--r-pill); font-weight: 500; font-size: var(--step-small);
     transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out);
   }
   .vf__play:active .vf__plate { transform: scale(0.97); }
@@ -40,7 +41,8 @@ const pl = lang === 'pl';
   }
   .vf iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .vf__cap { display: grid; gap: 0.15rem; }
-  .vf__title { font-size: var(--step-lead); line-height: 1.2; }
+  .vf__cap { padding-inline: 0.25rem; }
+  .vf__title { font-size: var(--step-lead); line-height: 1.25; font-weight: 500; }
   .vf__meta { font-size: var(--step-small); color: var(--muted); }
 </style>
 

@@ -90,6 +90,15 @@
     });
     const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
 
+    const readColours = () => {
+      const s = getComputedStyle(document.documentElement);
+      program.uniforms.uGround.value = hex(s.getPropertyValue('--bg').trim() || '#000000');
+      program.uniforms.uInk.value = hex(river ? s.getPropertyValue('--accent-text').trim() || '#63C5D6' : s.getPropertyValue('--wave-ink').trim() || '#F5F5F4');
+      renderer.render({ scene: mesh });
+    };
+    addEventListener('dysonans:mode', () => requestAnimationFrame(readColours));
+    readColours();
+
     const resize = () => {
       renderer.setSize(innerWidth, innerHeight);
       program.uniforms.uRes.value = [gl.drawingBufferWidth, gl.drawingBufferHeight];

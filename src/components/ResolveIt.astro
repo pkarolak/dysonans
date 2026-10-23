@@ -1,5 +1,6 @@
 ---
 import LoopVideo from './LoopVideo.astro';
+import Icon from './Icon.astro';
 import { signatureTrack } from '../data/site';
 import type { Lang } from '../i18n';
 
@@ -9,11 +10,11 @@ const pl = lang === 'pl';
 const voices = pl ? ['Sopran', 'Alt', 'Tenor', 'Bas'] : ['Soprano', 'Alto', 'Tenor', 'Bass'];
 ---
 
-<section class="resolve" aria-labelledby="resolve-title" data-resolve>
+<section class="resolve on-media" aria-labelledby="resolve-title" data-resolve>
   <div class="resolve__media">
     <LoopVideo name="scores-loop" label={pl ? 'Chórzyści z nutami podczas koncertu' : 'Singers holding their scores in concert'} />
   </div>
-  <div class="resolve__panel glass wrap">
+  <div class="resolve__panel glass">
     <div class="resolve__text">
       <h2 id="resolve-title" class="section-title" data-focus>{pl ? 'Nastrój chór' : 'Tune the choir'}</h2>
       <p class="resolve__lead" data-focus style="--i:1">
@@ -32,7 +33,7 @@ const voices = pl ? ['Sopran', 'Alt', 'Tenor', 'Bas'] : ['Soprano', 'Alto', 'Ten
         ))}
       </ul>
       <button class="resolve__hold button" type="button" data-resolve-hold aria-describedby="resolve-state">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 2v7a5 5 0 0 0 10 0V2M12 14v8" fill="none" stroke="currentColor" stroke-width="2.2" /></svg>
+        <Icon name="fork" size={20} />
         <span data-resolve-label>{pl ? 'Przytrzymaj kamerton' : 'Hold the fork'}</span>
       </button>
       <p class="resolve__state small" id="resolve-state" role="status" data-resolve-state>
@@ -46,27 +47,32 @@ const voices = pl ? ['Sopran', 'Alt', 'Tenor', 'Bas'] : ['Soprano', 'Alto', 'Ten
 </section>
 
 <style>
-  .resolve { position: relative; min-height: 100svh; display: grid; align-items: end; overflow: clip; }
-  .resolve__media { position: absolute; inset: 0; }
-  .resolve__media :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.55) contrast(1.05); }
-  .resolve__panel {
-    position: relative; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(2rem, 6vw, 6rem);
-    align-items: end; padding-block: clamp(2.5rem, 6vw, 4.5rem); margin: var(--margin);
+  .resolve {
+    --r: var(--r-panel); --p: var(--p-panel);
+    position: relative; min-height: 92svh; display: grid; align-items: end; overflow: clip;
+    margin-inline: var(--margin); border-radius: var(--r); box-shadow: var(--shadow-lg); isolation: isolate; background: #000;
   }
-  .resolve__lead { margin-top: 1.25rem; max-width: 46ch; }
+  .resolve__media { position: absolute; inset: 0; }
+  .resolve__media :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.62) contrast(1.05); }
+  .resolve__panel {
+    position: relative; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(2rem, 5vw, 5rem);
+    align-items: end; padding: clamp(1.75rem, 4vw, 3.5rem); margin: var(--p); border-radius: calc(var(--r) - var(--p));
+  }
+  .resolve__lead { margin-top: 1.25rem; max-width: 44ch; color: var(--muted); font-size: var(--step-lead); line-height: 1.45; }
   .resolve__control { display: grid; gap: 1.1rem; }
   .resolve__lines { width: 100%; height: clamp(90px, 10vw, 140px); overflow: visible; }
+  .resolve__voices li { padding: 0.7rem 0.9rem; border-radius: 16px; background: rgb(255 255 255 / 0.07); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); }
   .resolve__line { fill: none; stroke: var(--ink); stroke-width: 1.6; vector-effect: non-scaling-stroke; opacity: 0.75; transition: stroke 400ms ease, opacity 400ms ease; }
   .resolve__line--1 { opacity: 0.6; }
   .resolve__line--2 { opacity: 0.5; }
   .resolve__line--3 { opacity: 0.42; }
   .resolve.is-resolved .resolve__line { stroke: var(--accent-strong); opacity: 1; }
-  .resolve__voices { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gutter); font-size: var(--step-small); color: var(--muted); }
+  .resolve__voices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: var(--step-small); color: var(--muted); }
   .resolve__voices li { display: grid; gap: 0.1rem; }
-  .resolve__voices li span:last-child { color: var(--ink); font-size: var(--step-body); }
+  .resolve__voices li span:last-child { color: var(--ink); font-size: var(--step-lead); font-weight: 500; }
   .resolve__hold { justify-self: start; min-height: 3.5rem; padding-inline: 1.6rem; touch-action: none; user-select: none; -webkit-user-select: none; position: relative; overflow: clip; }
   .resolve__hold::before {
-    content: ''; position: absolute; inset: 0; background: var(--accent-strong); transform: scaleX(var(--p, 0)); transform-origin: 0 50%;
+    content: ''; position: absolute; inset: 0; background: var(--accent-strong); transform: scaleX(var(--prog, 0)); transform-origin: 0 50%;
   }
   .resolve__hold > * { position: relative; }
   .resolve__hold.is-holding { transform: scale(0.97); }
@@ -75,7 +81,9 @@ const voices = pl ? ['Sopran', 'Alt', 'Tenor', 'Bas'] : ['Soprano', 'Alto', 'Ten
   html:not(.js) .resolve__hold, html:not(.js) .resolve__state { display: none; }
 
   @media (max-width: 860px) {
-    .resolve__panel { grid-template-columns: 1fr; margin: 10px; }
+    .resolve { margin-inline: 10px; }
+    .resolve__panel { grid-template-columns: 1fr; }
+    .resolve__voices { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 
@@ -209,7 +217,7 @@ const voices = pl ? ['Sopran', 'Alt', 'Tenor', 'Bas'] : ['Soprano', 'Alto', 'Ten
     if (!reduce) t += dt * 2.2;
     if (holding) p = Math.min(1, p + dt / 2.6);
     else if (!resolved) p = Math.max(0, p - dt / 1.4);
-    btn?.style.setProperty('--p', String(resolved ? 1 : p));
+    btn?.style.setProperty('--prog', String(resolved ? 1 : p));
     apply();
     draw();
     if (!resolved) dispatchEvent(new CustomEvent('dysonans:tension', { detail: 1 - ease(p) }));

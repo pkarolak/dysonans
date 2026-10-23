@@ -7,6 +7,7 @@ import white from '../assets/photos/white-church.jpg';
 import scores from '../assets/photos/scores-closeup.jpg';
 import madonna from '../assets/photos/church-madonna.jpg';
 import LoopVideo from '../components/LoopVideo.astro';
+import Icon from '../components/Icon.astro';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -16,16 +17,19 @@ const mail = (subject: string, body = '') => `mailto:${contact.email}?subject=${
 
 const intents = [
   {
+    icon: 'ticket',
     h: L('Zaproś nas na koncert', 'Invite us to sing'),
     p: L('Koncerty, festiwale, uroczystości. Napisz, gdzie i kiedy, a odpowiemy z propozycją repertuaru.', 'Concerts, festivals, ceremonies. Tell us where and when and we will reply with a repertoire proposal.'),
     a: { href: mail(L('Zaproszenie na koncert', 'Concert invitation'), L('Dzień dobry,\n\nData:\nMiejsce:\nOkazja:\n', 'Hello,\n\nDate:\nVenue:\nOccasion:\n')), label: L('Napisz w sprawie koncertu', 'Write about a concert') },
   },
   {
+    icon: 'microphone-stage',
     h: L('Śpiewaj z nami', 'Sing with us'),
     p: L('Śpiewają u nas studenci i absolwenci poznańskich uczelni. Napisz, jaki masz głos i gdzie śpiewałeś.', 'Our singers are students and graduates of Poznań universities. Tell us your voice part and where you have sung.'),
     a: { href: mail(L('Chcę śpiewać w Dysonansie', 'I would like to sing with Dysonans')), label: L('Zgłoś się', 'Get in touch') },
   },
   {
+    icon: 'vinyl-record',
     h: L('Kup płytę', 'Buy a CD'),
     p: L('Trzy płyty są w sprzedaży w Music Island albo bezpośrednio od nas.', 'Three CDs are on sale at Music Island or directly from us.'),
     a: { href: routes.shop[lang], label: L('Przejdź do sklepu', 'Go to the shop') },
@@ -43,8 +47,18 @@ const intents = [
     <div>
       <h1 data-focus>{L('Kontakt', 'Contact')}</h1>
       <p class="lead" data-focus style="--i:1">{L('Napisz albo zadzwoń do Chóru Kameralnego Dysonans: koncerty, przesłuchania, płyty.', 'Write to or call the Dysonans Chamber Choir about concerts, auditions or CDs.')}</p>
-      <p class="contact-big" data-focus style="--i:2"><a class="link" href={`mailto:${contact.email}`}>{contact.email}</a></p>
-      <p class="contact-big nums" data-focus style="--i:3"><a class="link" href={contact.phoneHref}>{contact.phone}</a></p>
+      <div class="reach">
+        <a class="reach__tile tile tile--hover" href={`mailto:${contact.email}`} data-focus style="--i:2">
+          <span class="chip-icon"><Icon name="envelope-simple" weight="duotone" size={24} /></span>
+          <span><span class="reach__k">E-mail</span><span class="reach__v">{contact.email}</span></span>
+          <Icon name="arrow-up-right" size={20} class="reach__go" />
+        </a>
+        <a class="reach__tile tile tile--hover" href={contact.phoneHref} data-focus style="--i:3">
+          <span class="chip-icon"><Icon name="phone" weight="duotone" size={24} /></span>
+          <span><span class="reach__k">{L('Telefon', 'Phone')}</span><span class="reach__v nums">{contact.phone}</span></span>
+          <Icon name="arrow-up-right" size={20} class="reach__go" />
+        </a>
+      </div>
     </div>
     <figure class="contact-pic" data-reveal>
       <LoopVideo name="hero-gorizia" eager label={L('Dysonans na scenie w Gorycji', 'Dysonans on stage in Gorizia')} />
@@ -52,13 +66,18 @@ const intents = [
   </header>
 
   <section class="intents wrap" aria-labelledby="intents-title">
-    <h2 id="intents-title" class="section-title" data-focus>{L('W jakiej sprawie?', 'What is it about?')}</h2>
+    <div class="section-head">
+      <h2 id="intents-title" class="section-title" data-focus>{L('W jakiej sprawie?', 'What is it about?')}</h2>
+    </div>
     <ul class="intents__list">
       {intents.map((it, i) => (
-        <li class="intent" data-reveal style={`--i:${i}`}>
-          <h3 class="intent__h">{it.h}</h3>
-          <p>{it.p}</p>
-          <a class="link" href={it.a.href}>{it.a.label}</a>
+        <li data-reveal style={`--i:${i}`}>
+          <a class="intent tile tile--hover" href={it.a.href}>
+            <span class="chip-icon"><Icon name={it.icon} weight="duotone" size={24} /></span>
+            <h3 class="tile-title">{it.h}</h3>
+            <p class="intent__p">{it.p}</p>
+            <span class="arrow-link">{it.a.label}<Icon name="arrow-right" size={18} /></span>
+          </a>
         </li>
       ))}
     </ul>
@@ -66,76 +85,94 @@ const intents = [
 
   <section class="org wrap" aria-labelledby="org-title">
     <div class="org__pics">
-      <figure class="org__pic shutter" data-reveal>
-        <Image src={white} alt={L('Chór śpiewa w jasnym kościele', 'The choir sings in a white church')} widths={[600, 1000]} sizes="(max-width: 860px) 90vw, 30vw" class="cover lit" />
+      <figure class="org__pic rounded shutter" data-reveal>
+        <Image src={white} alt={L('Chór śpiewa w jasnym kościele', 'The choir sings in a white church')} widths={[600, 1000]} sizes="(max-width: 860px) 90vw, 30vw" class="cover" />
       </figure>
-      <figure class="org__pic org__pic--small shutter" data-reveal style="--i:1">
-        <Image src={scores} alt={L('Nuty w dłoniach chórzystów', 'Scores in the singers’ hands')} widths={[400, 700]} sizes="(max-width: 860px) 50vw, 18vw" class="cover lit" />
+      <figure class="org__pic org__pic--small rounded shutter" data-reveal style="--i:1">
+        <Image src={scores} alt={L('Nuty w dłoniach chórzystów', 'Scores in the singers’ hands')} widths={[400, 700]} sizes="(max-width: 860px) 50vw, 18vw" class="cover" />
       </figure>
-      <figure class="org__pic org__pic--small shutter" data-reveal style="--i:2">
-        <Image src={madonna} alt={L('Chór przed ołtarzem', 'The choir before an altar')} widths={[400, 700]} sizes="(max-width: 860px) 50vw, 18vw" class="cover lit" />
+      <figure class="org__pic org__pic--small rounded shutter" data-reveal style="--i:2">
+        <Image src={madonna} alt={L('Chór przed ołtarzem', 'The choir before an altar')} widths={[400, 700]} sizes="(max-width: 860px) 50vw, 18vw" class="cover" />
       </figure>
     </div>
     <div class="org__text">
       <h2 id="org-title" class="section-title" data-focus>{L('Kto za nami stoi', 'Who runs the choir')}</h2>
-      <dl class="org__list" data-reveal>
-        <div><dt class="muted">{L('Organizacja', 'Organisation')}</dt><dd>{t(contact.association, lang)}</dd></div>
-        <div><dt class="muted">NIP</dt><dd class="nums">{contact.nip}</dd></div>
-        <div><dt class="muted">{L('Konto', 'Bank account')}</dt><dd class="nums">{contact.bank.account}<br /><span class="muted small">{contact.bank.name}</span></dd></div>
-        <div><dt class="muted">{L('Biuro', 'Office')}</dt><dd><a class="link" href={`mailto:${contact.emailOffice}`}>{contact.emailOffice}</a></dd></div>
-        <div><dt class="muted">{L('Dyrygenci', 'Conductors')}</dt><dd>{conductors.map((c) => c.name).join(', ')}</dd></div>
+      <dl class="org__list panel" data-reveal>
+        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="buildings" size={20} /></span><dt>{L('Organizacja', 'Organisation')}</dt><dd>{t(contact.association, lang)}</dd></div>
+        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="seal-check" size={20} /></span><dt>NIP</dt><dd class="nums">{contact.nip}</dd></div>
+        <div class="org__row">
+          <span class="chip-icon chip-icon--neutral"><Icon name="hand-coins" size={20} /></span><dt>{L('Konto', 'Bank account')}</dt>
+          <dd class="org__account"><span><span class="nums">{contact.bank.account}</span><span class="muted small">{contact.bank.name}</span></span>
+            <button class="icon-button org__copy" type="button" data-copy={contact.bank.account.replace(/\s/g, '')} aria-label={L('Skopiuj numer konta', 'Copy account number')}>
+              <span data-copy-icon="copy"><Icon name="copy" size={20} /></span><span data-copy-icon="done" hidden><Icon name="check" size={20} weight="bold" /></span>
+            </button>
+          </dd>
+        </div>
+        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="envelope-simple" size={20} /></span><dt>{L('Biuro', 'Office')}</dt><dd><a class="link" href={`mailto:${contact.emailOffice}`}>{contact.emailOffice}</a></dd></div>
+        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="music-notes-simple" size={20} /></span><dt>{L('Dyrygenci', 'Conductors')}</dt><dd>{conductors.map((c) => c.name).join(', ')}</dd></div>
       </dl>
-      <button class="button button--ghost org__copy" type="button" data-copy={contact.bank.account.replace(/\s/g, '')}>
-        <span data-copy-label>{L('Skopiuj numer konta', 'Copy account number')}</span>
-      </button>
+      <p class="org__status small muted" role="status" data-copy-status></p>
     </div>
   </section>
 </Base>
 
 <style>
   .contact-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--gutter); align-items: end; }
-  .contact-big { font-size: var(--step-head); line-height: 1.1; letter-spacing: -0.02em; margin-top: 1.5rem; overflow-wrap: anywhere; }
-  .contact-big + .contact-big { margin-top: 0.5rem; }
-  .contact-big a { text-decoration-thickness: 0.04em; }
-  .contact-pic { aspect-ratio: 4 / 5; overflow: clip; }
-  .contact-pic :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.75) contrast(1.05); }
   .contact-head .lead { margin-top: 1.25rem; }
+  .reach { display: grid; gap: var(--gutter); margin-top: 2.5rem; max-width: 40rem; }
+  .reach__tile { display: grid; grid-template-columns: auto 1fr auto; gap: 1.1rem; align-items: center; }
+  .reach__k { display: block; color: var(--muted); font-size: var(--step-small); font-weight: 500; }
+  .reach__v { display: block; font-size: var(--step-title); line-height: 1.15; font-weight: 500; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .reach__tile :global(.reach__go) { color: var(--muted); transition: transform 300ms var(--ease-out), color 300ms ease; }
+  .reach__tile:hover :global(.reach__go) { transform: translate(2px, -2px); color: var(--ink); }
+  .contact-pic { aspect-ratio: 4 / 5; overflow: clip; border-radius: var(--r-panel); box-shadow: var(--shadow-lg); }
+  .contact-pic :global(video) { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8) contrast(1.05); }
 
-  .intents { padding-block: var(--section); }
-  .intents__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gutter); margin-top: 3rem; }
-  .intent { display: grid; gap: 0.9rem; align-content: start; padding: clamp(1.25rem, 2.5vw, 2rem); background: var(--surface); }
-  .intent:nth-child(2) { margin-top: 3rem; }
-  .intent:nth-child(3) { margin-top: 6rem; }
-  .intent__h { font-size: var(--step-lead); line-height: 1.2; }
+  .intents { padding-block: var(--section) calc(var(--section) / 2); }
+  .intents__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gutter); }
+  .intents__list > li { display: grid; }
+  .intent { display: grid; gap: 0.9rem; align-content: start; grid-template-rows: auto auto 1fr auto; }
+  .intent .chip-icon { margin-bottom: 1.5rem; }
+  .intent__p { color: var(--muted); }
 
-  .org { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 6vw, 6rem); align-items: center; padding-bottom: var(--section); }
-  .org__pics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .org__pic { aspect-ratio: 4 / 3; overflow: clip; grid-column: 1 / -1; }
+  .org { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; padding-block: calc(var(--section) / 2) var(--section); }
+  .org__pics { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gutter); }
+  .org__pic { aspect-ratio: 4 / 3; grid-column: 1 / -1; box-shadow: var(--shadow); }
   .org__pic--small { grid-column: auto; aspect-ratio: 1; }
-  .org__list { margin-top: 2.5rem; display: grid; gap: 1.25rem; }
-  .org__list > div { display: grid; grid-template-columns: 10rem 1fr; gap: var(--gutter); }
-  .org__copy { margin-top: 2rem; }
+  .org__list { display: grid; gap: 6px; margin-top: 2rem; }
+  .org__row { display: grid; grid-template-columns: auto 9rem 1fr; gap: 1rem; align-items: center; padding: 0.75rem 1rem 0.75rem 0.75rem; border-radius: calc(var(--r) - var(--p)); background: var(--surface-2); }
+  .org__row dt { color: var(--muted); font-size: var(--step-small); font-weight: 500; }
+  .org__row dd { font-weight: 500; }
+  .org__account { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .org__account > span { display: grid; }
+  .org__status { min-height: 1.5em; margin-top: 0.75rem; }
 
+  @media (max-width: 1000px) { .intents__list { grid-template-columns: 1fr; } .intent .chip-icon { margin-bottom: 0.5rem; } }
   @media (max-width: 860px) {
     .contact-head, .org { grid-template-columns: 1fr; }
-    .intents__list { grid-template-columns: 1fr; }
-    .intent:nth-child(n) { margin-top: 0; }
-    .org__list > div { grid-template-columns: 1fr; gap: 0.2rem; }
+    .org__row { grid-template-columns: auto 1fr; }
+    .org__row dd { grid-column: 2; }
   }
 </style>
 
 <script>
   document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
-    const label = btn.querySelector<HTMLElement>('[data-copy-label]');
-    const original = label?.textContent ?? '';
+    const copyIcon = btn.querySelector<HTMLElement>('[data-copy-icon="copy"]');
+    const doneIcon = btn.querySelector<HTMLElement>('[data-copy-icon="done"]');
+    const status = document.querySelector<HTMLElement>('[data-copy-status]');
+    const pl = document.documentElement.lang === 'pl';
     btn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(btn.dataset.copy ?? '');
-        if (label) label.textContent = document.documentElement.lang === 'pl' ? 'Skopiowano' : 'Copied';
+        if (copyIcon && doneIcon) { copyIcon.hidden = true; doneIcon.hidden = false; }
+        if (status) status.textContent = pl ? 'Numer konta skopiowany.' : 'Account number copied.';
       } catch {
-        if (label) label.textContent = btn.dataset.copy ?? '';
+        if (status) status.textContent = btn.dataset.copy ?? '';
       }
-      setTimeout(() => { if (label) label.textContent = original; }, 2200);
+      setTimeout(() => {
+        if (copyIcon && doneIcon) { copyIcon.hidden = false; doneIcon.hidden = true; }
+        if (status) status.textContent = '';
+      }, 2200);
     });
   });
 </script>
