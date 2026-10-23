@@ -104,7 +104,7 @@ const facts = [
             <figcaption class="meta">{L('Zamek Opalińskich, gdzie stanęła wystawa o baroku misyjnym', 'The Opaliński castle, home of the mission baroque exhibition')}</figcaption>
           </figure>
         )}
-        <ul class="events panel">
+        <ul class="events">
           {ed.events.map((e, j) => (
             <li class:list={['event', { 'event--us': e.dysonans }]} data-reveal style={`--i:${j}`}>
               <span class="event__when nums"><span>{t(e.day, lang)}</span>{e.time && <span class="event__time">{e.time}</span>}</span>
@@ -170,15 +170,15 @@ const facts = [
   .edition__film { overflow: clip; border-radius: var(--r-tile); box-shadow: var(--shadow); }
   .edition__film :global(video) { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; filter: brightness(0.85); }
 
-  .events { display: grid; gap: 6px; }
-  .event { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.25rem; padding: 1.1rem 1.25rem; border-radius: calc(var(--r) - var(--p)); background: var(--surface-2); }
+  .events { display: grid; border-top: 1px solid var(--line); }
+  .event { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.25rem; padding-block: 1.1rem; border-bottom: 1px solid var(--line); }
   .event__when { display: grid; align-content: start; gap: 0.15rem; font-weight: 500; }
   .event__time { color: var(--muted); font-size: var(--step-small); }
   .event__what { display: grid; gap: 0.3rem; }
   .event__title { font-size: var(--step-lead); line-height: 1.3; font-weight: 500; }
   .event__badge { display: inline-block; vertical-align: 0.15em; margin-right: 0.5rem; padding: 0.15rem 0.6rem; border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent-text); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; }
   .event__who { color: var(--muted); }
-  .event--us { box-shadow: inset 0 0 0 1px var(--accent-soft); }
+  .event--us .event__when { color: var(--accent-text); }
   .programme { display: grid; gap: 0.75rem; }
   .programme__h { display: flex; align-items: center; gap: 0.5rem; font-size: var(--step-small); color: var(--accent-text); font-weight: 500; }
 

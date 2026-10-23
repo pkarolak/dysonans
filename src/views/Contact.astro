@@ -97,19 +97,19 @@ const intents = [
     </div>
     <div class="org__text">
       <h2 id="org-title" class="section-title" data-focus>{L('Kto za nami stoi', 'Who runs the choir')}</h2>
-      <dl class="org__list panel" data-reveal>
-        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="buildings" size={20} /></span><dt>{L('Organizacja', 'Organisation')}</dt><dd>{t(contact.association, lang)}</dd></div>
-        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="seal-check" size={20} /></span><dt>NIP</dt><dd class="nums">{contact.nip}</dd></div>
+      <dl class="org__list" data-reveal>
+        <div class="org__row"><dt>{L('Organizacja', 'Organisation')}</dt><dd>{t(contact.association, lang)}</dd></div>
+        <div class="org__row"><dt>NIP</dt><dd class="nums">{contact.nip}</dd></div>
         <div class="org__row">
-          <span class="chip-icon chip-icon--neutral"><Icon name="hand-coins" size={20} /></span><dt>{L('Konto', 'Bank account')}</dt>
+          <dt>{L('Konto', 'Bank account')}</dt>
           <dd class="org__account"><span><span class="nums">{contact.bank.account}</span><span class="muted small">{contact.bank.name}</span></span>
             <button class="icon-button org__copy" type="button" data-copy={contact.bank.account.replace(/\s/g, '')} aria-label={L('Skopiuj numer konta', 'Copy account number')}>
               <span data-copy-icon="copy"><Icon name="copy" size={20} /></span><span data-copy-icon="done" hidden><Icon name="check" size={20} weight="bold" /></span>
             </button>
           </dd>
         </div>
-        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="envelope-simple" size={20} /></span><dt>{L('Biuro', 'Office')}</dt><dd><a class="link" href={`mailto:${contact.emailOffice}`}>{contact.emailOffice}</a></dd></div>
-        <div class="org__row"><span class="chip-icon chip-icon--neutral"><Icon name="music-notes-simple" size={20} /></span><dt>{L('Dyrygenci', 'Conductors')}</dt><dd>{conductors.map((c) => c.name).join(', ')}</dd></div>
+        <div class="org__row"><dt>{L('Biuro', 'Office')}</dt><dd><a class="link" href={`mailto:${contact.emailOffice}`}>{contact.emailOffice}</a></dd></div>
+        <div class="org__row"><dt>{L('Dyrygenci', 'Conductors')}</dt><dd>{conductors.map((c) => c.name).join(', ')}</dd></div>
       </dl>
       <p class="org__status small muted" role="status" data-copy-status></p>
     </div>
@@ -139,8 +139,8 @@ const intents = [
   .org__pics { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gutter); }
   .org__pic { aspect-ratio: 4 / 3; grid-column: 1 / -1; box-shadow: var(--shadow); }
   .org__pic--small { grid-column: auto; aspect-ratio: 1; }
-  .org__list { display: grid; gap: 6px; margin-top: 2rem; }
-  .org__row { display: grid; grid-template-columns: auto 9rem 1fr; gap: 1rem; align-items: center; padding: 0.75rem 1rem 0.75rem 0.75rem; border-radius: calc(var(--r) - var(--p)); background: var(--surface-2); }
+  .org__list { display: grid; margin-top: 2rem; border-top: 1px solid var(--line); }
+  .org__row { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; align-items: baseline; padding-block: 1rem; border-bottom: 1px solid var(--line); }
   .org__row dt { color: var(--muted); font-size: var(--step-small); font-weight: 500; }
   .org__row dd { font-weight: 500; }
   .org__account { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -150,8 +150,7 @@ const intents = [
   @media (max-width: 1000px) { .intents__list { grid-template-columns: 1fr; } .intent .chip-icon { margin-bottom: 0.5rem; } }
   @media (max-width: 860px) {
     .contact-head, .org { grid-template-columns: 1fr; }
-    .org__row { grid-template-columns: auto 1fr; }
-    .org__row dd { grid-column: 2; }
+    .org__row { grid-template-columns: 1fr; gap: 0.2rem; }
   }
 </style>
 

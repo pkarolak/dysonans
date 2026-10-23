@@ -132,12 +132,12 @@ const films = videos.filter((v) => v.kind === 'film');
   .album__signature { --p: 0.75rem; display: grid; grid-template-columns: auto 1fr auto; gap: 0.85rem; align-items: center; width: 100%; max-width: 30rem; padding-right: 1.1rem; }
   .album__sig-k { display: block; font-size: var(--step-small); color: var(--accent-text); font-weight: 500; }
   .album__sig-t { display: block; font-weight: 500; }
-  .album__tracks { width: 100%; border-radius: 18px; background: var(--surface-2); }
-  .album__tracks summary { display: flex; align-items: center; gap: 0.6rem; min-height: 3.25rem; padding: 0 1.1rem; cursor: pointer; list-style: none; font-weight: 500; }
+  .album__tracks { width: 100%; border-block: 1px solid var(--line); }
+  .album__tracks summary { display: flex; align-items: center; gap: 0.6rem; min-height: 3.25rem; padding: 0; cursor: pointer; list-style: none; font-weight: 500; }
   .album__tracks summary::-webkit-details-marker { display: none; }
   .album__tracks summary :global(.album__caret) { margin-left: auto; transition: transform 300ms var(--ease-out); }
   .album__tracks[open] summary :global(.album__caret) { transform: rotate(180deg); }
-  .album__tracks ol { columns: 2; column-gap: 2rem; padding: 0.25rem 1.1rem 1.1rem 2.4rem; font-size: var(--step-small); }
+  .album__tracks ol { columns: 2; column-gap: 2rem; padding: 0.25rem 0 1.1rem 1.3rem; font-size: var(--step-small); }
   .album__tracks li { break-inside: avoid; padding-block: 0.3rem; }
   .album__tracks li span { display: block; }
   .album__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
